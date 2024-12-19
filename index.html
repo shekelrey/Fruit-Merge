@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Fruit Merge Game with Firebase</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        canvas {
+            display: block;
+        }
+        #plantButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 999;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <button id="plantButton">Plant Seed</button>
+
+    <!-- Matter.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.min.js"></script>
+
+    <!-- Firebase App (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app-compat.js"></script>
+    <!-- If you want to use Analytics -->
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics-compat.js"></script>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyC1UkIoa4YLssMC0sQDAqFmqneIJ7PpCsU",
+          authDomain: "fruit-merge-idc-game.firebaseapp.com",
+          projectId: "fruit-merge-idc-game",
+          storageBucket: "fruit-merge-idc-game.firebasestorage.app",
+          messagingSenderId: "581122347526",
+          appId: "1:581122347526:web:7d120f38a40c60a7c2e987",
+          measurementId: "G-VDD7CG94Y2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+
+        // Shortcuts to Matter.js
+        var Engine = Matter.Engine,
+            Render = Matter.Render,
+            Runner = Matter.Runner,
+            Composite = Matter.Composite,
+            Bodies = Matter.Bodies,
+            Events = Matter.Events;
+
+        var engine = Engine.create(),
+            world = engine.world;
+
+        var render = Render.create({
+            element: document.body,
+            engine: engine,
+            options: {
+                width: 800,
+                height: 600,
+                wireframes: false,
+                background: '#f4f4f4'
+            }
+        });
+
+        Render.run(render);
+        var runner = Runner.create();
+        Runner.run(runner, engine);
+
+        // Cup setup
+        var cupCenterX = 400; 
+        var cupCenterY = 300;
+        var cupWidthTop = 300;
+        var cupWidthBottom = 200;
+        var cupHeight = 400;
+
+        var bottom = Bodies.rectangle(cupCenterX, cupCenterY + cupHeight/2, cupWidthBottom, 40, {
+            isStatic: true,
+            render: { fillStyle: '#555' }
+        });
+
+        var angle = Math.atan((cupWidthTop - cupWidthBottom) / (2 * cupHeight));
+
+        var leftWall = Bodies.rectangle(
+            cupCenterX - (cupWidthBottom/2) - 20,
+            cupCenterY,
+            cupHeight,
+            40,
+            {
+                isStatic: true,
+                angle: -Math.PI/2 - angle,
+                render: { fillStyle: '#555' }
+            }
+        );
+
+        var rightWall = Bodies.rectangle(
+            cupCenterX + (cupWidthBottom/2) + 20,
+            cupCenterY,
+            cupHeight,
+            40,
+            {
+                isStatic: true,
+                angle: Math.PI/2 + angle,
+                render: { fillStyle: '#555' }
+            }
+        );
+
+        Composite.add(world, [bottom, leftWall, rightWall]);
+
+        var guideLine = { x: 400, y: 50 };
+
+        // 3-level fruit hierarchy
+        var fruitHierarchy = {
+            'strawberry': {
+                levels: [
+                    { color: '#ff0000', radius: 15 },
+                    { color: '#ff6666', radius: 20 },
+                    { color: '#ff9999', radius: 25 }
+                ]
+            },
+            'banana': {
+                levels: [
+                    { color: '#ffff00', radius: 15 },
+                    { color: '#fffa5c', radius: 20 },
+                    { color: '#fffca0', radius: 25 }
+                ]
+            },
+            'blueberry': {
+                levels: [
+                    { color: '#0000ff', radius: 15 },
+                    { color: '#6666ff', radius: 20 },
+                    { color: '#9999ff', radius: 25 }
+                ]
+            },
+            'kiwi': {
+                levels: [
+                    { color: '#8b4513', radius: 15 },
+                    { color: '#a06020', radius: 20 },
+                    { color: '#c08040', radius: 25 }
+                ]
+            },
+            'orange': {
+                levels: [
+                    { color: '#ffa500', radius: 15 },
+                    { color: '#ffb733', radius: 20 },
+                    { color: '#ffc966', radius: 25 }
+                ]
+            },
+            'grape': {
+                levels: [
+                    { color: '#9f00ff', radius: 15 },
+                    { color: '#af33ff', radius: 20 },
+                    { color: '#bf66ff', radius: 25 }
+                ]
+            }
+        };
+
+        var allFruits = Object.keys(fruitHierarchy);
+
+        function getRandomFruitType() {
+            return allFruits[Math.floor(Math.random() * allFruits.length)];
+        }
+
+        function getRandomFruitEntry() {
+            return { type: getRandomFruitType(), level: 0 };
+        }
+
+        var upcomingFruits = [getRandomFruitEntry(), getRandomFruitEntry(), getRandomFruitEntry()];
+        function currentFruit() {
+            return upcomingFruits[0];
+        }
+
+        var gardenArea = { x: 50, y: 150, width: 100, height: 100 };
+        var gardenState = {
+            hasSeed: false,
+            hasFruit: false,
+            fruitType: null,
+            fruitLevel: 0,
+            growTimeout: null
+        };
+
+        var moveLeft = false;
+        var moveRight = false;
+        var moveSpeed = 5;
+
+        var plantButton = document.getElementById('plantButton');
+        plantButton.addEventListener('click', function() {
+            plantSeed();
+        });
+
+        document.addEventListener('click', function(event) {
+            var rect = render.canvas.getBoundingClientRect();
+            var clickX = event.clientX - rect.left;
+            var clickY = event.clientY - rect.top;
+
+            if (
+                clickX >= gardenArea.x && clickX <= gardenArea.x + gardenArea.width &&
+                clickY >= gardenArea.y && clickY <= gardenArea.y + gardenArea.height
+            ) {
+                if (gardenState.hasFruit) {
+                    takeGardenFruit();
+                } else {
+                    plantSeed();
+                }
+            }
+        });
+
+        function plantSeed() {
+            if (!gardenState.hasSeed && !gardenState.hasFruit) {
+                gardenState.hasSeed = true;
+                gardenState.growTimeout = setTimeout(function() {
+                    gardenState.hasSeed = false;
+                    gardenState.hasFruit = true;
+                    gardenState.fruitType = getRandomFruitType();
+                    gardenState.fruitLevel = 0;
+                }, 10000);
+            }
+        }
+
+        function takeGardenFruit() {
+            if (gardenState.hasFruit) {
+                upcomingFruits[0] = { type: gardenState.fruitType, level: gardenState.fruitLevel };
+                gardenState.hasFruit = false;
+                gardenState.fruitType = null;
+                gardenState.fruitLevel = 0;
+            }
+        }
+
+        function dropFruit() {
+            var curr = currentFruit();
+            var fruit = createFruit(guideLine.x, 50, curr.type, curr.level);
+            Composite.add(world, fruit);
+            analyzeCup();
+
+            upcomingFruits.shift();
+            upcomingFruits.push(getRandomFruitEntry());
+        }
+
+        function createFruit(x, y, fruitType, level) {
+            var type = fruitHierarchy[fruitType];
+            var lvlData = type.levels[level];
+            var fruit = Bodies.circle(x, y, lvlData.radius, {
+                restitution: 0.5,
+                label: fruitType,
+                render: {
+                    fillStyle: lvlData.color
+                }
+            });
+
+            fruit.fruitType = fruitType;
+            fruit.fruitLevel = level;
+            return fruit;
+        }
+
+        function analyzeCup() {
+            var fruitCounts = {};
+            Composite.allBodies(world).forEach(function(body) {
+                if (body.fruitType) {
+                    var key = body.fruitType + "_L" + body.fruitLevel;
+                    if (!fruitCounts[key]) fruitCounts[key] = 0;
+                    fruitCounts[key]++;
+                }
+            });
+            console.log("Current fruits in cup:", fruitCounts);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                moveLeft = true;
+            } else if (event.key === 'ArrowRight') {
+                moveRight = true;
+            } else if (event.key === ' ') {
+                dropFruit();
+            }
+        });
+
+        document.addEventListener('keyup', function(event) {
+            if (event.key === 'ArrowLeft') {
+                moveLeft = false;
+            } else if (event.key === 'ArrowRight') {
+                moveRight = false;
+            }
+        });
+
+        function mergeFruits(bodyA, bodyB) {
+            var fruitType = bodyA.fruitType;
+            var level = bodyA.fruitLevel;
+            var typeData = fruitHierarchy[fruitType];
+            var maxLevel = typeData.levels.length - 1;
+
+            Composite.remove(world, bodyA);
+            Composite.remove(world, bodyB);
+
+            if (level < maxLevel) {
+                var newX = (bodyA.position.x + bodyB.position.x) / 2;
+                var newY = (bodyA.position.y + bodyB.position.y) / 2;
+                var mergedFruit = createFruit(newX, newY, fruitType, level + 1);
+                Composite.add(world, mergedFruit);
+            }
+        }
+
+        Events.on(engine, 'collisionStart', function(event) {
+            var pairs = event.pairs;
+            pairs.forEach(function(pair) {
+                var bodyA = pair.bodyA;
+                var bodyB = pair.bodyB;
+                if (bodyA.fruitType && bodyB.fruitType) {
+                    if (bodyA.fruitType === bodyB.fruitType && bodyA.fruitLevel === bodyB.fruitLevel) {
+                        mergeFruits(bodyA, bodyB);
+                    }
+                }
+            });
+        });
+
+        function drawGuideLine(ctx) {
+            ctx.beginPath();
+            ctx.moveTo(guideLine.x, 0);
+            ctx.lineTo(guideLine.x, 600);
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            var curr = currentFruit();
+            var type = fruitHierarchy[curr.type];
+            var lvlData = type.levels[curr.level];
+
+            ctx.beginPath();
+            ctx.arc(guideLine.x, 50, lvlData.radius, 0, 2 * Math.PI);
+            ctx.fillStyle = lvlData.color;
+            ctx.fill();
+            ctx.strokeStyle = "black";
+            ctx.stroke();
+
+            ctx.fillStyle = "black";
+            ctx.font = "16px Arial";
+            ctx.fillText(curr.type + " L" + (curr.level + 1), guideLine.x - 40, 80);
+        }
+
+        function drawUpcomingFruits(ctx) {
+            var startX = render.canvas.width - 60;
+            var startY = 50; 
+            var verticalSpacing = 70; 
+
+            ctx.font = "14px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("Upcoming:", startX - 20, startY - 20);
+
+            for (var i = 1; i < upcomingFruits.length; i++) {
+                var fruitData = upcomingFruits[i];
+                var type = fruitHierarchy[fruitData.type];
+                var lvlData = type.levels[fruitData.level];
+
+                var yPos = startY + (i - 1) * verticalSpacing; 
+                ctx.beginPath();
+                ctx.arc(startX, yPos, lvlData.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = lvlData.color;
+                ctx.fill();
+                ctx.strokeStyle = "black";
+                ctx.stroke();
+
+                ctx.fillStyle = "black";
+                ctx.fillText(fruitData.type + " L" + (fruitData.level + 1), startX - 60, yPos + 30);
+            }
+        }
+
+        function drawGarden(ctx) {
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(gardenArea.x, gardenArea.y, gardenArea.width, gardenArea.height);
+            ctx.strokeStyle = 'black';
+            ctx.strokeRect(gardenArea.x, gardenArea.y, gardenArea.width, gardenArea.height);
+
+            ctx.fillStyle = 'black';
+            ctx.font = "14px Arial";
+            ctx.fillText("Garden", gardenArea.x + 10, gardenArea.y + 20);
+
+            if (gardenState.hasSeed && !gardenState.hasFruit) {
+                ctx.fillStyle = 'yellow';
+                ctx.fillText("Seed Growing...", gardenArea.x + 10, gardenArea.y + 50);
+            }
+
+            if (gardenState.hasFruit) {
+                var type = fruitHierarchy[gardenState.fruitType];
+                var lvlData = type.levels[gardenState.fruitLevel];
+                var fruitX = gardenArea.x + gardenArea.width / 2;
+                var fruitY = gardenArea.y + gardenArea.height / 2;
+                ctx.beginPath();
+                ctx.arc(fruitX, fruitY, lvlData.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = lvlData.color;
+                ctx.fill();
+                ctx.strokeStyle = "black";
+                ctx.stroke();
+
+                ctx.fillStyle = "black";
+                ctx.font = "12px Arial";
+                ctx.fillText(gardenState.fruitType + " L1", fruitX - 20, fruitY + lvlData.radius + 15);
+                ctx.fillText("Click to Take", fruitX - 25, fruitY + lvlData.radius + 30);
+            }
+        }
+
+        (function renderLoop() {
+            var leftLimit = 400 - (cupWidthTop/2) + 20;
+            var rightLimit = 400 + (cupWidthTop/2) - 20;
+
+            if (moveLeft && guideLine.x > leftLimit) {
+                guideLine.x -= moveSpeed;
+            }
+            if (moveRight && guideLine.x < rightLimit) {
+                guideLine.x += moveSpeed;
+            }
+
+            var context = render.context;
+            context.clearRect(0, 0, render.canvas.width, render.canvas.height);
+            Render.world(render);
+
+            drawGuideLine(context);
+            drawUpcomingFruits(context);
+            drawGarden(context);
+
+            requestAnimationFrame(renderLoop);
+        })();
+    </script>
+</body>
+</html>
