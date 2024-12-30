@@ -116,6 +116,36 @@
 
         var guideLine = { x: 500, y: 200 };
 
+        // Mouse movement controls
+document.addEventListener('mousemove', function(event) {
+    var canvasRect = render.canvas.getBoundingClientRect();
+    var mouseX = event.clientX - canvasRect.left;
+
+    var leftLimit = 500 - (cupWidthTop / 2) + 20;
+    var rightLimit = 500 + (cupWidthTop / 2) - 20;
+
+    // Update guideLine.x based on mouse movement, within limits
+    if (mouseX > leftLimit && mouseX < rightLimit) {
+        guideLine.x = mouseX;
+    }
+});
+
+// Mouse click to drop fruit
+document.addEventListener('click', function(event) {
+    var canvasRect = render.canvas.getBoundingClientRect();
+    var mouseX = event.clientX - canvasRect.left;
+    var mouseY = event.clientY - canvasRect.top;
+
+    // Only drop the fruit if the click is within the game area
+    if (
+        mouseX > 0 && mouseX < canvasRect.width &&
+        mouseY > 0 && mouseY < canvasRect.height
+    ) {
+        dropFruit();
+    }
+});
+
+
         let coins = 0; // Track the number of coins
 
         // 4-level fruit hierarchy
