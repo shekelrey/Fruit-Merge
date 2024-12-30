@@ -73,7 +73,7 @@
 
         // Cup setup
         var cupCenterX = 500; 
-        var cupCenterY = 300;
+        var cupCenterY = 420;
         var cupWidthTop = 400;
         var cupWidthBottom = 300;
         var cupHeight = 300;
@@ -114,7 +114,7 @@
 
         Composite.add(world, [bottom, leftWall, rightWall]);
 
-        var guideLine = { x: 500, y: 50 };
+        var guideLine = { x: 500, y: 200 };
 
         let coins = 0; // Track the number of coins
 
@@ -180,20 +180,20 @@
             ];
 
             function drawCustomers(ctx) {
-                var startX = 20; // Initial X position for the first customer
-                var startY = cupCenterY + cupHeight / 2 + 100; // Customers positioned below the cup
-                var horizontalSpacing = 350; // Space between customers horizontally
+                var startX = 250; // Initial X position for the first customer
+                var startY = cupCenterY + cupHeight / 2 - 520; // Customers positioned below the cup
+                var horizontalSpacing = 200; // Space between customers horizontally
 
                 ctx.font = "20px 'Sour Gummy', sans-serif";
                 ctx.fillStyle = "black";
-                ctx.fillText("Customers:", startX, startY - 30);
+                ctx.fillText("Customer:", startX, startY);
 
                 customers.forEach((customer, index) => {
                     var xPos = startX + index * horizontalSpacing; // Adjust X position based on index
 
                     ctx.fillStyle = customer.fulfilled ? "green" : "black";
                     ctx.fillText(
-                        `Customer ${customer.id}: ${customer.fruit} L${customer.level + 1}`,
+                        `Customer ${customer.id}:`,
                         xPos,
                         startY
                     );
@@ -360,7 +360,7 @@
             return { type: getRandomFruitType(), level: 0 };
         }
 
-        var upcomingFruits = [getRandomFruitEntry(), getRandomFruitEntry(), getRandomFruitEntry()];
+        var upcomingFruits = [getRandomFruitEntry(), getRandomFruitEntry(), getRandomFruitEntry(), getRandomFruitEntry(), getRandomFruitEntry()];
         function currentFruit() {
             return upcomingFruits[0];
         } 
@@ -372,7 +372,7 @@
 
         function dropFruit() {
             var curr = currentFruit();
-            var fruit = createFruit(guideLine.x, 50, curr.type, curr.level);
+            var fruit = createFruit(guideLine.x, 200, curr.type, curr.level);
             Composite.add(world, fruit);
             analyzeCup();
 
@@ -477,8 +477,8 @@
         function drawGuideLine(ctx) {
             // Set dashed line style
             ctx.beginPath();
-            ctx.moveTo(guideLine.x, 50);
-            ctx.lineTo(guideLine.x, 350);
+            ctx.moveTo(guideLine.x, 240);
+            ctx.lineTo(guideLine.x, 400);
             ctx.strokeStyle = "black";
             ctx.lineWidth = 1;
             ctx.setLineDash([5, 5]);  // Set the dash pattern: [dash length, gap length]
@@ -490,7 +490,7 @@
             var lvlData = type.levels[curr.level];
 
             ctx.beginPath();
-            ctx.arc(guideLine.x, 50, lvlData.radius, 0, 2 * Math.PI);
+            ctx.arc(guideLine.x, 200, lvlData.radius, 0, 2 * Math.PI);
             ctx.fillStyle = lvlData.color;
             ctx.fill();
             ctx.strokeStyle = "black";
@@ -498,17 +498,17 @@
 
             ctx.fillStyle = "black";
             ctx.font = "18px 'Sour Gummy', sans-serif";
-            ctx.fillText(curr.type + " L" + (curr.level + 1), guideLine.x - 40, 80);
+            ctx.fillText(curr.type + " L" + (curr.level + 1), guideLine.x - 40, 230);
         }
 
         function drawUpcomingFruits(ctx) {
             var startX = 60; 
-            var startY = 50;
+            var startY = 350;
             var verticalSpacing = 70;
 
             ctx.font = "20px 'Sour Gummy', sans-serif";
             ctx.fillStyle = "black";
-            ctx.fillText("Upcoming:", startX - 20, startY - 30);
+            ctx.fillText("Upcoming:", startX - 20, startY - 50);
 
             for (var i = 1; i < upcomingFruits.length; i++) {
                 var fruitData = upcomingFruits[i];
@@ -530,12 +530,12 @@
         function drawCurrentLevel(ctx) {
             ctx.font = "40px 'Honk', sans-serif";
             ctx.fillStyle = "black";
-            ctx.fillText("Level: " + level, render.canvas.width / 1.2, 30);
+            ctx.fillText("Level: " + level, 30, 30);
         }
         function displayCoins(ctx) {
             ctx.font = "40px 'Honk', sans-serif";
             ctx.fillStyle = "black";
-            ctx.fillText("Coins: " + coins, render.canvas.width / 1.2, 80);
+            ctx.fillText("Coins: " + coins, 30, 80);
         }
 
         (function renderLoop() {
