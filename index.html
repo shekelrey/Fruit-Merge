@@ -3,28 +3,23 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://fonts.googleapis.com/css2?family=Sour+Gummy&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Honk&display=swap" rel="stylesheet">
+
     <title>Fruit Merge Game with Firebase</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             position: relative;
+            font-family: 'Sour Gummy', sans-serif;
         }
         canvas {
             display: block;
         }
-        #plantButton {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 999;
-            font-size: 14px;
-            padding: 5px 10px;
-        }
     </style>
 </head>
 <body>
-    <button id="plantButton">Plant Seed</button>
 
     <!-- Matter.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.min.js"></script>
@@ -65,10 +60,10 @@
             element: document.body,
             engine: engine,
             options: {
-                width: 800,
-                height: 600,
+                width: 1300,
+                height: 1000,
                 wireframes: false,
-                background: '#f4f4f4'
+                background: '#ccebff'
             }
         });
 
@@ -77,13 +72,16 @@
         Runner.run(runner, engine);
 
         // Cup setup
-        var cupCenterX = 400; 
+        var cupCenterX = 500; 
         var cupCenterY = 300;
-        var cupWidthTop = 300;
-        var cupWidthBottom = 200;
-        var cupHeight = 400;
+        var cupWidthTop = 400;
+        var cupWidthBottom = 300;
+        var cupHeight = 300;
+        var cupBottomY = cupCenterY + cupHeight / 2;
+        
+        var level = 1;
 
-        var bottom = Bodies.rectangle(cupCenterX, cupCenterY + cupHeight/2, cupWidthBottom, 40, {
+        var bottom = Bodies.rectangle(cupCenterX, cupCenterY + cupHeight / 2, cupWidthBottom, 40, {
             isStatic: true,
             render: { fillStyle: '#555' }
         });
@@ -91,80 +89,268 @@
         var angle = Math.atan((cupWidthTop - cupWidthBottom) / (2 * cupHeight));
 
         var leftWall = Bodies.rectangle(
-            cupCenterX - (cupWidthBottom/2) - 20,
+            cupCenterX - cupWidthBottom / 2 - 20,
             cupCenterY,
             cupHeight,
             40,
             {
                 isStatic: true,
-                angle: -Math.PI/2 - angle,
+                angle: -Math.PI / 2 - angle,
                 render: { fillStyle: '#555' }
             }
         );
 
         var rightWall = Bodies.rectangle(
-            cupCenterX + (cupWidthBottom/2) + 20,
+            cupCenterX + cupWidthBottom / 2 + 20,
             cupCenterY,
             cupHeight,
             40,
             {
                 isStatic: true,
-                angle: Math.PI/2 + angle,
+                angle: Math.PI / 2 + angle,
                 render: { fillStyle: '#555' }
             }
         );
 
         Composite.add(world, [bottom, leftWall, rightWall]);
 
-        var guideLine = { x: 400, y: 50 };
+        var guideLine = { x: 500, y: 50 };
 
-        // 3-level fruit hierarchy
+        let coins = 0; // Track the number of coins
+
+        // 4-level fruit hierarchy
         var fruitHierarchy = {
-            'strawberry': {
+            'Strawberry': {
                 levels: [
-                    { color: '#ff0000', radius: 15 },
-                    { color: '#ff6666', radius: 20 },
-                    { color: '#ff9999', radius: 25 }
+                    { color: '#FC8694', radius: 15 },
+                    { color: '#FB576A', radius: 20 },
+                    { color: '#F92740', radius: 25 },
+                    { color: '#DE2339', radius: 30 }
                 ]
             },
-            'banana': {
+            'Banana': {
                 levels: [
-                    { color: '#ffff00', radius: 15 },
-                    { color: '#fffa5c', radius: 20 },
-                    { color: '#fffca0', radius: 25 }
+                    { color: '#FFF4BB', radius: 15 },
+                    { color: '#FFEE8F', radius: 20 },
+                    { color: '#FFE762', radius: 25 },
+                    { color: '#FFE135', radius: 30 }
                 ]
             },
-            'blueberry': {
+            'Blueberry': {
                 levels: [
-                    { color: '#0000ff', radius: 15 },
-                    { color: '#6666ff', radius: 20 },
-                    { color: '#9999ff', radius: 25 }
+                    { color: '#7772B9', radius: 15 },
+                    { color: '#554FA2', radius: 20 },
+                    { color: '#464096', radius: 25 },
+                    { color: '#2E2B64', radius: 30 }
                 ]
             },
-            'kiwi': {
+            'Kiwi': {
                 levels: [
-                    { color: '#8b4513', radius: 15 },
-                    { color: '#a06020', radius: 20 },
-                    { color: '#c08040', radius: 25 }
+                    { color: '#c08459', radius: 15 },
+                    { color: '#a66a3f', radius: 20 },
+                    { color: '#8e5b36', radius: 25 },
+                    { color: '#6f472a', radius: 30 }
                 ]
             },
-            'orange': {
+            'Orange': {
                 levels: [
-                    { color: '#ffa500', radius: 15 },
-                    { color: '#ffb733', radius: 20 },
-                    { color: '#ffc966', radius: 25 }
+                    { color: '#ffcc80', radius: 15 },
+                    { color: '#ffad33', radius: 20 },
+                    { color: '#ff9900', radius: 25 },
+                    { color: '#ff8000', radius: 30 }
                 ]
             },
-            'grape': {
+            'Grape': {
                 levels: [
-                    { color: '#9f00ff', radius: 15 },
-                    { color: '#af33ff', radius: 20 },
-                    { color: '#bf66ff', radius: 25 }
+                    { color: '#B677AB', radius: 15 },
+                    { color: '#924685', radius: 20 },
+                    { color: '#6D2161', radius: 25 },
+                    { color: '#5B144F', radius: 30 }   
                 ]
             }
         };
 
         var allFruits = Object.keys(fruitHierarchy);
+
+                // Add customers array
+                var customers = [
+                { id: 1, fruit: getRandomFruitType(), level: 3, fulfilled: false },
+                { id: 2, fruit: getRandomFruitType(), level: 2, fulfilled: false },
+                { id: 3, fruit: getRandomFruitType(), level: 1, fulfilled: false }
+            ];
+
+            function drawCustomers(ctx) {
+                var startX = 20; // Initial X position for the first customer
+                var startY = cupCenterY + cupHeight / 2 + 100; // Customers positioned below the cup
+                var horizontalSpacing = 350; // Space between customers horizontally
+
+                ctx.font = "20px 'Sour Gummy', sans-serif";
+                ctx.fillStyle = "black";
+                ctx.fillText("Customers:", startX, startY - 30);
+
+                customers.forEach((customer, index) => {
+                    var xPos = startX + index * horizontalSpacing; // Adjust X position based on index
+
+                    ctx.fillStyle = customer.fulfilled ? "green" : "black";
+                    ctx.fillText(
+                        `Customer ${customer.id}: ${customer.fruit} L${customer.level + 1}`,
+                        xPos,
+                        startY
+                    );
+
+                    if (!customer.fulfilled) {
+                        var type = fruitHierarchy[customer.fruit];
+                        var lvlData = type.levels[customer.level];
+
+                        ctx.beginPath();
+                        ctx.arc(xPos + 50, startY + 40, lvlData.radius, 0, 2 * Math.PI); // Adjust fruit position
+                        ctx.fillStyle = lvlData.color;
+                        ctx.fill();
+                        ctx.strokeStyle = "black";
+                        ctx.stroke();
+                    }
+                });
+            }
+
+        function showPopupAndProceed() {
+            // Check if the popup already exists to avoid duplicates
+            if (document.getElementById('popup')) return;
+
+            // Add 10 coins when the level is completed
+            coins += 10;
+
+            // Create a popup overlay
+            var popup = document.createElement('div');
+            popup.id = 'popup'; // Add an ID to the popup for easy reference
+            popup.style.position = 'absolute';
+            popup.style.top = '50%';
+            popup.style.left = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            popup.style.padding = '20px';
+            popup.style.backgroundColor = 'white';
+            popup.style.border = '2px solid black';
+            popup.style.zIndex = '1000';
+            popup.innerHTML = `
+                <p>Congratulations! You've completed this level!</p>
+                <p>You have earned 10 coins!</p>
+                <p>Total Coins: ${coins}</p>
+                <button id="nextLevelBtn">Next Level</button>
+            `;
+            document.body.appendChild(popup);
+
+            // Ensure the button event is correctly attached after the popup is added
+            var nextLevelButton = document.getElementById('nextLevelBtn');
+            if (nextLevelButton) {
+                nextLevelButton.addEventListener('click', function () {
+                    // Remove the popup
+                    var popup = document.getElementById('popup');
+                    if (popup) {
+                        document.body.removeChild(popup);
+                    }
+
+                    // Increment the level
+                    level++;
+
+                    // Reset customers and clear the cup
+                    resetCustomers();
+                });
+            }
+        }
+
+        function showLossPopup() {
+            // Check if the popup already exists to avoid duplicates
+            if (document.getElementById('lossPopup')) return;
+
+            // 3.2. Create a loss popup overlay
+            var popup = document.createElement('div');
+            popup.id = 'lossPopup'; // Add an ID to the popup for easy reference
+            popup.style.position = 'absolute';
+            popup.style.top = '50%';
+            popup.style.left = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            popup.style.padding = '20px';
+            popup.style.backgroundColor = 'white';
+            popup.style.border = '2px solid black';
+            popup.style.zIndex = '1000';
+            popup.innerHTML = `
+                <p>You Lost! A fruit fell out of the cup.</p>
+                <button id="restartLevelBtn">Restart Level</button>
+            `;
+            document.body.appendChild(popup);
+
+            // 3.3. Attach event to restart the level when the button is clicked
+            var restartLevelButton = document.getElementById('restartLevelBtn');
+            if (restartLevelButton) {
+                restartLevelButton.addEventListener('click', function () {
+                    // Remove the popup
+                    var popup = document.getElementById('lossPopup');
+                    if (popup) {
+                        document.body.removeChild(popup);
+                    }
+
+                    // Restart the level
+                    resetLevel();
+                });
+            }
+        }
+
+        function resetLevel() {
+            // 4.2. Reset the level (you can modify this to maintain the current level if needed)
+            level = 1; // Reset to the starting level (or the current level if needed)
+            coins = 0; // Reset coins (optional)
+
+            // 4.3. Reset customers
+            resetCustomers();
+
+            // 4.4. Clear the cup by removing all fruit bodies from the Matter.js world
+            Composite.allBodies(world).forEach(body => {
+                if (body.fruitType) {
+                    Composite.remove(world, body);
+                }
+            });
+
+            console.log("Level restarted and cup cleared.");
+        }
+
+        function resetCustomers() {
+            // Reset customers
+            customers = [
+                { id: 1, fruit: getRandomFruitType(), level: 3, fulfilled: false },
+                { id: 2, fruit: getRandomFruitType(), level: 2, fulfilled: false },
+                { id: 3, fruit: getRandomFruitType(), level: 1, fulfilled: false }
+            ];
+
+            // Clear the cup by removing all fruit bodies from the Matter.js world
+            Composite.allBodies(world).forEach(body => {
+                if (body.fruitType) { // Only remove bodies that represent fruits
+                    Composite.remove(world, body);
+                }
+            });
+
+            console.log("Cup cleared and customers reset for the next level.");
+        }
+
+        function checkAllCustomersFulfilled() {
+            return customers.every(customer => customer.fulfilled);
+        }
+
+        function checkCustomerRequests(fruit) {
+            customers.forEach((customer) => {
+                if (
+                    !customer.fulfilled &&
+                    customer.fruit === fruit.fruitType &&
+                    customer.level === fruit.fruitLevel
+                ) {
+                    customer.fulfilled = true;
+                    Composite.remove(world, fruit);
+                }
+            });
+
+            // Check if all customers are fulfilled
+            if (checkAllCustomersFulfilled()) {
+                showPopupAndProceed();
+            }
+        }
 
         function getRandomFruitType() {
             return allFruits[Math.floor(Math.random() * allFruits.length)];
@@ -177,63 +363,12 @@
         var upcomingFruits = [getRandomFruitEntry(), getRandomFruitEntry(), getRandomFruitEntry()];
         function currentFruit() {
             return upcomingFruits[0];
-        }
-
-        var gardenArea = { x: 50, y: 150, width: 100, height: 100 };
-        var gardenState = {
-            hasSeed: false,
-            hasFruit: false,
-            fruitType: null,
-            fruitLevel: 0,
-            growTimeout: null
-        };
+        } 
 
         var moveLeft = false;
         var moveRight = false;
         var moveSpeed = 5;
 
-        var plantButton = document.getElementById('plantButton');
-        plantButton.addEventListener('click', function() {
-            plantSeed();
-        });
-
-        document.addEventListener('click', function(event) {
-            var rect = render.canvas.getBoundingClientRect();
-            var clickX = event.clientX - rect.left;
-            var clickY = event.clientY - rect.top;
-
-            if (
-                clickX >= gardenArea.x && clickX <= gardenArea.x + gardenArea.width &&
-                clickY >= gardenArea.y && clickY <= gardenArea.y + gardenArea.height
-            ) {
-                if (gardenState.hasFruit) {
-                    takeGardenFruit();
-                } else {
-                    plantSeed();
-                }
-            }
-        });
-
-        function plantSeed() {
-            if (!gardenState.hasSeed && !gardenState.hasFruit) {
-                gardenState.hasSeed = true;
-                gardenState.growTimeout = setTimeout(function() {
-                    gardenState.hasSeed = false;
-                    gardenState.hasFruit = true;
-                    gardenState.fruitType = getRandomFruitType();
-                    gardenState.fruitLevel = 0;
-                }, 10000);
-            }
-        }
-
-        function takeGardenFruit() {
-            if (gardenState.hasFruit) {
-                upcomingFruits[0] = { type: gardenState.fruitType, level: gardenState.fruitLevel };
-                gardenState.hasFruit = false;
-                gardenState.fruitType = null;
-                gardenState.fruitLevel = 0;
-            }
-        }
 
         function dropFruit() {
             var curr = currentFruit();
@@ -268,6 +403,12 @@
                     var key = body.fruitType + "_L" + body.fruitLevel;
                     if (!fruitCounts[key]) fruitCounts[key] = 0;
                     fruitCounts[key]++;
+
+                    // 2.2. Check if the fruit has fallen out of the cup
+                    if (body.position.y > cupBottomY) {
+                        // Player loses if a fruit falls out of the cup
+                        showLossPopup();
+                    }
                 }
             });
             console.log("Current fruits in cup:", fruitCounts);
@@ -295,39 +436,54 @@
             var fruitType = bodyA.fruitType;
             var level = bodyA.fruitLevel;
             var typeData = fruitHierarchy[fruitType];
-            var maxLevel = typeData.levels.length - 1;
+            var maxLevel = typeData.levels.length - 1; // Dynamically get the max level
 
+            // Remove the two fruits that are merging
             Composite.remove(world, bodyA);
             Composite.remove(world, bodyB);
 
+            // Add coins only if the fruits were at max level
+            if (level == maxLevel) {
+                coins += 5;
+                console.log("5 coins added for max level fruits! Total coins: " + coins);
+            }
+
             if (level < maxLevel) {
+                // Create a new merged fruit with a higher level
                 var newX = (bodyA.position.x + bodyB.position.x) / 2;
                 var newY = (bodyA.position.y + bodyB.position.y) / 2;
                 var mergedFruit = createFruit(newX, newY, fruitType, level + 1);
                 Composite.add(world, mergedFruit);
             }
         }
-
-        Events.on(engine, 'collisionStart', function(event) {
+        Events.on(engine, 'collisionStart', function (event) {
             var pairs = event.pairs;
-            pairs.forEach(function(pair) {
+            pairs.forEach(function (pair) {
                 var bodyA = pair.bodyA;
                 var bodyB = pair.bodyB;
+
                 if (bodyA.fruitType && bodyB.fruitType) {
                     if (bodyA.fruitType === bodyB.fruitType && bodyA.fruitLevel === bodyB.fruitLevel) {
                         mergeFruits(bodyA, bodyB);
                     }
                 }
+
+                // Check customer requests for fruits involved in collisions
+                if (bodyA.fruitType) checkCustomerRequests(bodyA);
+                if (bodyB.fruitType) checkCustomerRequests(bodyB);
             });
         });
 
         function drawGuideLine(ctx) {
+            // Set dashed line style
             ctx.beginPath();
-            ctx.moveTo(guideLine.x, 0);
-            ctx.lineTo(guideLine.x, 600);
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 2;
+            ctx.moveTo(guideLine.x, 50);
+            ctx.lineTo(guideLine.x, 350);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);  // Set the dash pattern: [dash length, gap length]
             ctx.stroke();
+            ctx.setLineDash([]);  // Reset to solid lines for the other drawing elements
 
             var curr = currentFruit();
             var type = fruitHierarchy[curr.type];
@@ -341,25 +497,25 @@
             ctx.stroke();
 
             ctx.fillStyle = "black";
-            ctx.font = "16px Arial";
+            ctx.font = "18px 'Sour Gummy', sans-serif";
             ctx.fillText(curr.type + " L" + (curr.level + 1), guideLine.x - 40, 80);
         }
 
         function drawUpcomingFruits(ctx) {
-            var startX = render.canvas.width - 60;
-            var startY = 50; 
-            var verticalSpacing = 70; 
+            var startX = 60; 
+            var startY = 50;
+            var verticalSpacing = 70;
 
-            ctx.font = "14px Arial";
+            ctx.font = "20px 'Sour Gummy', sans-serif";
             ctx.fillStyle = "black";
-            ctx.fillText("Upcoming:", startX - 20, startY - 20);
+            ctx.fillText("Upcoming:", startX - 20, startY - 30);
 
             for (var i = 1; i < upcomingFruits.length; i++) {
                 var fruitData = upcomingFruits[i];
                 var type = fruitHierarchy[fruitData.type];
                 var lvlData = type.levels[fruitData.level];
 
-                var yPos = startY + (i - 1) * verticalSpacing; 
+                var yPos = startY + (i - 1) * verticalSpacing;
                 ctx.beginPath();
                 ctx.arc(startX, yPos, lvlData.radius, 0, 2 * Math.PI);
                 ctx.fillStyle = lvlData.color;
@@ -368,47 +524,23 @@
                 ctx.stroke();
 
                 ctx.fillStyle = "black";
-                ctx.fillText(fruitData.type + " L" + (fruitData.level + 1), startX - 60, yPos + 30);
+                ctx.fillText(fruitData.type + " L" + (fruitData.level + 1), startX + 20, yPos + 10); // Adjust text alignment for the left side
             }
         }
-
-        function drawGarden(ctx) {
-            ctx.fillStyle = '#228B22';
-            ctx.fillRect(gardenArea.x, gardenArea.y, gardenArea.width, gardenArea.height);
-            ctx.strokeStyle = 'black';
-            ctx.strokeRect(gardenArea.x, gardenArea.y, gardenArea.width, gardenArea.height);
-
-            ctx.fillStyle = 'black';
-            ctx.font = "14px Arial";
-            ctx.fillText("Garden", gardenArea.x + 10, gardenArea.y + 20);
-
-            if (gardenState.hasSeed && !gardenState.hasFruit) {
-                ctx.fillStyle = 'yellow';
-                ctx.fillText("Seed Growing...", gardenArea.x + 10, gardenArea.y + 50);
-            }
-
-            if (gardenState.hasFruit) {
-                var type = fruitHierarchy[gardenState.fruitType];
-                var lvlData = type.levels[gardenState.fruitLevel];
-                var fruitX = gardenArea.x + gardenArea.width / 2;
-                var fruitY = gardenArea.y + gardenArea.height / 2;
-                ctx.beginPath();
-                ctx.arc(fruitX, fruitY, lvlData.radius, 0, 2 * Math.PI);
-                ctx.fillStyle = lvlData.color;
-                ctx.fill();
-                ctx.strokeStyle = "black";
-                ctx.stroke();
-
-                ctx.fillStyle = "black";
-                ctx.font = "12px Arial";
-                ctx.fillText(gardenState.fruitType + " L1", fruitX - 20, fruitY + lvlData.radius + 15);
-                ctx.fillText("Click to Take", fruitX - 25, fruitY + lvlData.radius + 30);
-            }
+        function drawCurrentLevel(ctx) {
+            ctx.font = "40px 'Honk', sans-serif";
+            ctx.fillStyle = "black";
+            ctx.fillText("Level: " + level, render.canvas.width / 1.2, 30);
+        }
+        function displayCoins(ctx) {
+            ctx.font = "40px 'Honk', sans-serif";
+            ctx.fillStyle = "black";
+            ctx.fillText("Coins: " + coins, render.canvas.width / 1.2, 80);
         }
 
         (function renderLoop() {
-            var leftLimit = 400 - (cupWidthTop/2) + 20;
-            var rightLimit = 400 + (cupWidthTop/2) - 20;
+            var leftLimit = 500 - (cupWidthTop / 2) + 20;
+            var rightLimit = 500 + (cupWidthTop / 2) - 20;
 
             if (moveLeft && guideLine.x > leftLimit) {
                 guideLine.x -= moveSpeed;
@@ -423,10 +555,17 @@
 
             drawGuideLine(context);
             drawUpcomingFruits(context);
-            drawGarden(context);
+            drawCustomers(context);
+            drawCurrentLevel(context); 
+
+            displayCoins(context);
+
+            // 5.2. Call analyzeCup to check if any fruit falls out of the cup
+            analyzeCup();
 
             requestAnimationFrame(renderLoop);
         })();
+
     </script>
 </body>
 </html>
