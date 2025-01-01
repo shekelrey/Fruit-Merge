@@ -202,48 +202,56 @@ document.addEventListener('click', function(event) {
 
         var allFruits = Object.keys(fruitHierarchy);
 
-                // Add customers array
-                var customers = [
-                { id: 1, fruit: getRandomFruitType(), level: 3, fulfilled: false },
-                { id: 2, fruit: getRandomFruitType(), level: 2, fulfilled: false },
-                { id: 3, fruit: getRandomFruitType(), level: 1, fulfilled: false }
-            ];
-
-            function drawCustomers(ctx) {
-    var startX = 250;
-    var startY = cupCenterY + cupHeight / 2 - 520;
-    var horizontalSpacing = 200;
+        
+        function drawCustomers(ctx) {
+    var startX = 250; // Initial X position for the first customer
+    var startY = cupCenterY + cupHeight / 2 - 520; // Customers positioned above the cup
+    var horizontalSpacing = 300; // Space between customers
 
     ctx.font = "20px 'Sour Gummy', sans-serif";
     ctx.fillStyle = "black";
-    ctx.fillText("Customer:", startX, startY);
+    ctx.fillText("Customer Requests:", startX, startY - 30);
 
     customers.forEach((customer, index) => {
         var xPos = startX + index * horizontalSpacing;
-        ctx.fillStyle = customer.fulfilled ? "green" : "black";
-        ctx.fillText(`Customer ${customer.id}:`, xPos, startY);
+        var yPos = startY;
 
-        if (!customer.fulfilled) {
-            var type = fruitHierarchy[customer.fruit];
-            var lvlData = type.levels[customer.level];
+        // Draw the customer label
+        ctx.fillStyle = "black";
+        ctx.fillText(`Customer ${customer.id}`, xPos, yPos);
 
+        // Draw the fruit requests in a tighter circular cluster
+        var centerX = xPos;
+        var centerY = yPos + 70; // Center of the cluster below the label
+        var radius = 30; // Reduced radius for closer fruits
+        var angleStep = (2 * Math.PI) / customer.requests.length;
+
+        customer.requests.forEach((request, reqIndex) => {
+            var type = fruitHierarchy[request.fruit];
+            var lvlData = type.levels[request.level];
+
+            // Calculate the position of the fruit in the tighter cluster
+            var fruitX = centerX + radius * Math.cos(reqIndex * angleStep);
+            var fruitY = centerY + radius * Math.sin(reqIndex * angleStep);
+
+            // Draw the fruit circle
             ctx.beginPath();
-            ctx.arc(xPos + 50, startY + 40, lvlData.radius, 0, 2 * Math.PI);
+            ctx.arc(fruitX, fruitY, lvlData.radius, 0, 2 * Math.PI);
             ctx.fillStyle = lvlData.color;
             ctx.fill();
             ctx.strokeStyle = "black";
             ctx.stroke();
 
-            // Determine text color
+            // Determine text color for optimal contrast
             const textColor = getContrastColor(lvlData.color);
 
-            // Add hierarchy text
+            // Add hierarchy text inside the fruit
             ctx.font = "16px 'Sour Gummy', sans-serif";
             ctx.fillStyle = textColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText((customer.level + 1) + "x", xPos + 50, startY + 40);
-        }
+            ctx.fillText((request.level + 1) + "x", fruitX, fruitY);
+        });
     });
 }
 
@@ -349,45 +357,66 @@ document.addEventListener('click', function(event) {
             console.log("Level restarted and cup cleared.");
         }
 
-        function resetCustomers() {
-            // Reset customers
-            customers = [
-                { id: 1, fruit: getRandomFruitType(), level: 3, fulfilled: false },
-                { id: 2, fruit: getRandomFruitType(), level: 2, fulfilled: false },
-                { id: 3, fruit: getRandomFruitType(), level: 1, fulfilled: false }
-            ];
-
-            // Clear the cup by removing all fruit bodies from the Matter.js world
-            Composite.allBodies(world).forEach(body => {
-                if (body.fruitType) { // Only remove bodies that represent fruits
-                    Composite.remove(world, body);
-                }
+        function generateRandomCustomers(numCustomers) {
+    let customers = [];
+    for (let i = 0; i < numCustomers; i++) {
+        let numRequests = Math.floor(Math.random() * 3) + 1; // 1 to 3 fruit requests
+        let requests = [];
+        for (let j = 0; j < numRequests; j++) {
+            requests.push({
+                fruit: getRandomFruitType(),
+                level: Math.floor(Math.random() * 4), // Random level (0 to 3)
+                fulfilled: false
             });
-
-            console.log("Cup cleared and customers reset for the next level.");
         }
+        customers.push({ id: i + 1, requests });
+    }
+    return customers;
+}
+
+// Initialize customers
+let customers = generateRandomCustomers(3); // Generate 3 customers
+
+
+
+
+function resetCustomers() {
+    customers = generateRandomCustomers(3); // Reset with new random customers
+
+    // Clear the cup by removing all fruit bodies from the Matter.js world
+    Composite.allBodies(world).forEach(body => {
+        if (body.fruitType) { // Only remove bodies that represent fruits
+            Composite.remove(world, body);
+        }
+    });
+
+    console.log("Cup cleared and customers reset for the next level.");
+}
+
 
         function checkAllCustomersFulfilled() {
             return customers.every(customer => customer.fulfilled);
         }
 
         function checkCustomerRequests(fruit) {
-            customers.forEach((customer) => {
-                if (
-                    !customer.fulfilled &&
-                    customer.fruit === fruit.fruitType &&
-                    customer.level === fruit.fruitLevel
-                ) {
-                    customer.fulfilled = true;
-                    Composite.remove(world, fruit);
-                }
-            });
-
-            // Check if all customers are fulfilled
-            if (checkAllCustomersFulfilled()) {
-                showPopupAndProceed();
+    customers.forEach(customer => {
+        customer.requests.forEach(request => {
+            if (
+                !request.fulfilled &&
+                request.fruit === fruit.fruitType &&
+                request.level === fruit.fruitLevel
+            ) {
+                request.fulfilled = true; // Mark the request as fulfilled
+                Composite.remove(world, fruit); // Remove the fruit from the world
             }
-        }
+        });
+    });
+
+    // Check if all customers are fulfilled
+    if (customers.every(customer => customer.requests.every(req => req.fulfilled))) {
+        showPopupAndProceed();
+    }
+}
 
         function getRandomFruitType() {
             return allFruits[Math.floor(Math.random() * allFruits.length)];
