@@ -210,37 +210,44 @@ document.addEventListener('click', function(event) {
             ];
 
             function drawCustomers(ctx) {
-                var startX = 250; // Initial X position for the first customer
-                var startY = cupCenterY + cupHeight / 2 - 520; // Customers positioned below the cup
-                var horizontalSpacing = 200; // Space between customers horizontally
+    var startX = 250;
+    var startY = cupCenterY + cupHeight / 2 - 520;
+    var horizontalSpacing = 200;
 
-                ctx.font = "20px 'Sour Gummy', sans-serif";
-                ctx.fillStyle = "black";
-                ctx.fillText("Customer:", startX, startY);
+    ctx.font = "20px 'Sour Gummy', sans-serif";
+    ctx.fillStyle = "black";
+    ctx.fillText("Customer:", startX, startY);
 
-                customers.forEach((customer, index) => {
-                    var xPos = startX + index * horizontalSpacing; // Adjust X position based on index
+    customers.forEach((customer, index) => {
+        var xPos = startX + index * horizontalSpacing;
+        ctx.fillStyle = customer.fulfilled ? "green" : "black";
+        ctx.fillText(`Customer ${customer.id}:`, xPos, startY);
 
-                    ctx.fillStyle = customer.fulfilled ? "green" : "black";
-                    ctx.fillText(
-                        `Customer ${customer.id}:`,
-                        xPos,
-                        startY
-                    );
+        if (!customer.fulfilled) {
+            var type = fruitHierarchy[customer.fruit];
+            var lvlData = type.levels[customer.level];
 
-                    if (!customer.fulfilled) {
-                        var type = fruitHierarchy[customer.fruit];
-                        var lvlData = type.levels[customer.level];
+            ctx.beginPath();
+            ctx.arc(xPos + 50, startY + 40, lvlData.radius, 0, 2 * Math.PI);
+            ctx.fillStyle = lvlData.color;
+            ctx.fill();
+            ctx.strokeStyle = "black";
+            ctx.stroke();
 
-                        ctx.beginPath();
-                        ctx.arc(xPos + 50, startY + 40, lvlData.radius, 0, 2 * Math.PI); // Adjust fruit position
-                        ctx.fillStyle = lvlData.color;
-                        ctx.fill();
-                        ctx.strokeStyle = "black";
-                        ctx.stroke();
-                    }
-                });
-            }
+            // Determine text color
+            const textColor = getContrastColor(lvlData.color);
+
+            // Add hierarchy text
+            ctx.font = "16px 'Sour Gummy', sans-serif";
+            ctx.fillStyle = textColor;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText((customer.level + 1) + "x", xPos + 50, startY + 40);
+        }
+    });
+}
+
+
 
         function showPopupAndProceed() {
             // Check if the popup already exists to avoid duplicates
@@ -410,22 +417,35 @@ document.addEventListener('click', function(event) {
             upcomingFruits.push(getRandomFruitEntry());
         }
 
+        function getContrastColor(hexColor) {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+
+    // Calculate luminance
+    const luminance = 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255);
+
+    // Return black or white based on luminance
+    return luminance > 0.5 ? "black" : "white";
+}
+
         function createFruit(x, y, fruitType, level) {
-            var type = fruitHierarchy[fruitType];
-            var lvlData = type.levels[level];
-            var fruit = Bodies.circle(x, y, lvlData.radius, {
-                restitution: 0.5,
-                label: fruitType,
-                render: {
-                    fillStyle: lvlData.color
-                }
-            });
-
-            fruit.fruitType = fruitType;
-            fruit.fruitLevel = level;
-            return fruit;
+    var type = fruitHierarchy[fruitType];
+    var lvlData = type.levels[level];
+    var fruit = Bodies.circle(x, y, lvlData.radius, {
+        restitution: 0.5,
+        label: fruitType,
+        render: {
+            fillStyle: lvlData.color
         }
+    });
 
+    fruit.fruitType = fruitType;
+    fruit.fruitLevel = level;
+    fruit.hierarchyText = (level + 1) + "x"; // Add the hierarchy text (e.g., 1x, 2x, 3x)
+    return fruit;
+}
         function analyzeCup() {
             var fruitCounts = {};
             Composite.allBodies(world).forEach(function(body) {
@@ -443,6 +463,35 @@ document.addEventListener('click', function(event) {
             });
             console.log("Current fruits in cup:", fruitCounts);
         }
+
+        function drawFruitsWithText(ctx) {
+    Composite.allBodies(world).forEach(function (body) {
+        if (body.fruitType) {
+            // Get the fruit's properties
+            var posX = body.position.x;
+            var posY = body.position.y;
+            var radius = fruitHierarchy[body.fruitType].levels[body.fruitLevel].radius;
+            var bgColor = fruitHierarchy[body.fruitType].levels[body.fruitLevel].color;
+
+            // Determine the contrast color for the text
+            const textColor = getContrastColor(bgColor);
+
+            // Draw the hierarchy text inside the fruit
+            ctx.font = "16px 'Sour Gummy', sans-serif";
+            ctx.fillStyle = textColor;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(body.hierarchyText, posX, posY);
+
+            // Optional: Debug circle (not visible in game)
+            // ctx.beginPath();
+            // ctx.arc(posX, posY, radius, 0, 2 * Math.PI);
+            // ctx.stroke();
+        }
+    });
+}
+
+
 
         document.addEventListener('keydown', function(event) {
             if (event.key === 'ArrowLeft') {
@@ -505,58 +554,80 @@ document.addEventListener('click', function(event) {
         });
 
         function drawGuideLine(ctx) {
-            // Set dashed line style
-            ctx.beginPath();
-            ctx.moveTo(guideLine.x, 240);
-            ctx.lineTo(guideLine.x, 400);
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 1;
-            ctx.setLineDash([5, 5]);  // Set the dash pattern: [dash length, gap length]
-            ctx.stroke();
-            ctx.setLineDash([]);  // Reset to solid lines for the other drawing elements
+    ctx.beginPath();
+    ctx.moveTo(guideLine.x, 240);
+    ctx.lineTo(guideLine.x, 400);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
-            var curr = currentFruit();
-            var type = fruitHierarchy[curr.type];
-            var lvlData = type.levels[curr.level];
+    var curr = currentFruit();
+    var type = fruitHierarchy[curr.type];
+    var lvlData = type.levels[curr.level];
 
-            ctx.beginPath();
-            ctx.arc(guideLine.x, 200, lvlData.radius, 0, 2 * Math.PI);
-            ctx.fillStyle = lvlData.color;
-            ctx.fill();
-            ctx.strokeStyle = "black";
-            ctx.stroke();
+    // Draw the preview fruit
+    ctx.beginPath();
+    ctx.arc(guideLine.x, 200, lvlData.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = lvlData.color;
+    ctx.fill();
+    ctx.strokeStyle = "black";
+    ctx.stroke();
 
-            ctx.fillStyle = "black";
-            ctx.font = "18px 'Sour Gummy', sans-serif";
-            ctx.fillText(curr.type + " L" + (curr.level + 1), guideLine.x - 40, 230);
-        }
+    // Determine text color based on fruit color
+    const textColor = getContrastColor(lvlData.color);
 
-        function drawUpcomingFruits(ctx) {
-            var startX = 60; 
-            var startY = 350;
-            var verticalSpacing = 70;
+    // Add hierarchy text inside the fruit
+    ctx.font = "16px 'Sour Gummy', sans-serif";
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText((curr.level + 1) + "x", guideLine.x, 200);
 
-            ctx.font = "20px 'Sour Gummy', sans-serif";
-            ctx.fillStyle = "black";
-            ctx.fillText("Upcoming:", startX - 20, startY - 50);
+    // Draw the fruit type label below the fruit
+    ctx.fillStyle = "black";
+    ctx.font = "18px 'Sour Gummy', sans-serif";
+    ctx.fillText(curr.type + " L" + (curr.level + 1), guideLine.x - 40, 230);
+}
 
-            for (var i = 1; i < upcomingFruits.length; i++) {
-                var fruitData = upcomingFruits[i];
-                var type = fruitHierarchy[fruitData.type];
-                var lvlData = type.levels[fruitData.level];
 
-                var yPos = startY + (i - 1) * verticalSpacing;
-                ctx.beginPath();
-                ctx.arc(startX, yPos, lvlData.radius, 0, 2 * Math.PI);
-                ctx.fillStyle = lvlData.color;
-                ctx.fill();
-                ctx.strokeStyle = "black";
-                ctx.stroke();
+function drawUpcomingFruits(ctx) {
+    var startX = 60; 
+    var startY = 350;
+    var verticalSpacing = 70;
 
-                ctx.fillStyle = "black";
-                ctx.fillText(fruitData.type + " L" + (fruitData.level + 1), startX + 20, yPos + 10); // Adjust text alignment for the left side
-            }
-        }
+    ctx.font = "20px 'Sour Gummy', sans-serif";
+    ctx.fillStyle = "black";
+    ctx.fillText("Upcoming:", startX - 20, startY - 50);
+
+    for (var i = 1; i < upcomingFruits.length; i++) {
+        var fruitData = upcomingFruits[i];
+        var type = fruitHierarchy[fruitData.type];
+        var lvlData = type.levels[fruitData.level]; 
+        var yPos = startY + (i - 1) * verticalSpacing;
+
+        // Draw the fruit circle
+        ctx.beginPath();
+        ctx.arc(startX, yPos, lvlData.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = lvlData.color;
+        ctx.fill();
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+
+        // Determine text color for optimal contrast
+        const textColor = getContrastColor(lvlData.color);
+
+        // Add hierarchy text inside the fruit
+        ctx.font = "16px 'Sour Gummy', sans-serif";
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText((fruitData.level + 1) + "x", startX, yPos);
+    }
+}
+
+
         function drawCurrentLevel(ctx) {
             ctx.font = "40px 'Honk', sans-serif";
             ctx.fillStyle = "black";
@@ -569,32 +640,33 @@ document.addEventListener('click', function(event) {
         }
 
         (function renderLoop() {
-            var leftLimit = 500 - (cupWidthTop / 2) + 20;
-            var rightLimit = 500 + (cupWidthTop / 2) - 20;
+    var leftLimit = 500 - (cupWidthTop / 2) + 20;
+    var rightLimit = 500 + (cupWidthTop / 2) - 20;
 
-            if (moveLeft && guideLine.x > leftLimit) {
-                guideLine.x -= moveSpeed;
-            }
-            if (moveRight && guideLine.x < rightLimit) {
-                guideLine.x += moveSpeed;
-            }
+    if (moveLeft && guideLine.x > leftLimit) {
+        guideLine.x -= moveSpeed;
+    }
+    if (moveRight && guideLine.x < rightLimit) {
+        guideLine.x += moveSpeed;
+    }
 
-            var context = render.context;
-            context.clearRect(0, 0, render.canvas.width, render.canvas.height);
-            Render.world(render);
+    var context = render.context;
+    context.clearRect(0, 0, render.canvas.width, render.canvas.height);
+    Render.world(render);
 
-            drawGuideLine(context);
-            drawUpcomingFruits(context);
-            drawCustomers(context);
-            drawCurrentLevel(context); 
+    drawGuideLine(context);
+    drawUpcomingFruits(context);
+    drawCustomers(context);
+    drawCurrentLevel(context); 
+    displayCoins(context);
 
-            displayCoins(context);
+    // Draw fruits with hierarchy text
+    drawFruitsWithText(context);
 
-            // 5.2. Call analyzeCup to check if any fruit falls out of the cup
-            analyzeCup();
+    analyzeCup(); // Check for out-of-cup fruits
+    requestAnimationFrame(renderLoop);
+})();
 
-            requestAnimationFrame(renderLoop);
-        })();
 
     </script>
 </body>
