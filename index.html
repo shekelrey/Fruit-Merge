@@ -204,9 +204,9 @@ document.addEventListener('click', function(event) {
 
         
         function drawCustomers(ctx) {
-    var startX = 250; // Initial X position for the first customer
-    var startY = cupCenterY + cupHeight / 2 - 520; // Customers positioned above the cup
-    var horizontalSpacing = 300; // Space between customers
+    var startX = 250;
+    var startY = cupCenterY + cupHeight / 2 - 520;
+    var horizontalSpacing = 300;
 
     ctx.font = "20px 'Sour Gummy', sans-serif";
     ctx.fillStyle = "black";
@@ -216,44 +216,59 @@ document.addEventListener('click', function(event) {
         var xPos = startX + index * horizontalSpacing;
         var yPos = startY;
 
-        // Draw the customer label
-        ctx.fillStyle = "black";
+        // If the customer is fulfilled, we color their label grey; else black
+        ctx.fillStyle = customer.fulfilled ? "grey" : "black";
         ctx.fillText(`Customer ${customer.id}`, xPos, yPos);
 
-        // Draw the fruit requests in a tighter circular cluster
+        // Center where we draw the fruit circles for this customer
         var centerX = xPos;
-        var centerY = yPos + 70; // Center of the cluster below the label
-        var radius = 30; // Reduced radius for closer fruits
+        var centerY = yPos + 70;
+        var radius = 30;
         var angleStep = (2 * Math.PI) / customer.requests.length;
 
         customer.requests.forEach((request, reqIndex) => {
             var type = fruitHierarchy[request.fruit];
             var lvlData = type.levels[request.level];
-
-            // Calculate the position of the fruit in the tighter cluster
             var fruitX = centerX + radius * Math.cos(reqIndex * angleStep);
             var fruitY = centerY + radius * Math.sin(reqIndex * angleStep);
 
-            // Draw the fruit circle
+            // Check if the requested fruit is in the cup
+            var inCup = Composite.allBodies(world).some(
+                (body) =>
+                    body.fruitType === request.fruit &&
+                    body.fruitLevel === request.level
+            );
+
             ctx.beginPath();
             ctx.arc(fruitX, fruitY, lvlData.radius, 0, 2 * Math.PI);
-            ctx.fillStyle = lvlData.color;
+
+            // If the entire customer is fulfilled, color the fruit grey.
+            // Otherwise, use the fruit's normal color.
+            ctx.fillStyle = customer.fulfilled ? "grey" : lvlData.color;
             ctx.fill();
-            ctx.strokeStyle = "black";
+
+            // If the fruit is in the cup (and not fulfilled), we give it a green border. 
+            // Otherwise black. If the entire customer is fulfilled, we can keep it grey or black—your choice.
+            ctx.strokeStyle = (inCup && !customer.fulfilled) ? "green" : "black";
+            ctx.lineWidth = (inCup && !customer.fulfilled) ? 3 : 1;
             ctx.stroke();
 
-            // Determine text color for optimal contrast
+            // Draw the text inside the fruit
             const textColor = getContrastColor(lvlData.color);
-
-            // Add hierarchy text inside the fruit
             ctx.font = "16px 'Sour Gummy', sans-serif";
-            ctx.fillStyle = textColor;
+            // If the fruit is grey, choose black or white for contrast:
+            const effectiveColor = customer.fulfilled ? "#aaaaaa" : lvlData.color;
+            const txtFillColor = getContrastColor(effectiveColor);
+            ctx.fillStyle = txtFillColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText((request.level + 1) + "x", fruitX, fruitY);
         });
     });
 }
+
+
+
 
 
 
@@ -276,7 +291,7 @@ document.addEventListener('click', function(event) {
             popup.style.border = '2px solid black';
             popup.style.zIndex = '1000';
             popup.innerHTML = `
-                <p>Congratulations! You've completed this level!</p>
+                <p>Congratulations! You've completed this level!</p> 
                 <p>You have earned 10 coins!</p>
                 <p>Total Coins: ${coins}</p>
                 <button id="nextLevelBtn">Next Level</button>
@@ -375,22 +390,94 @@ document.addEventListener('click', function(event) {
 }
 
 // Initialize customers
-let customers = generateRandomCustomers(3); // Generate 3 customers
+let levelNumber = 1; // track globally or store in your code
+let customers = generateLevel(levelNumber); // from the function above
 
+function generateLevel(levelNumber) {
+  // Basic difficulty knobs:
+  // 1) The higher the level, the more customers
+  // 2) Requests get more complicated or more fruit
+  // 3) Higher-level fruit is more likely
+
+  // At minimum, level 1 => 1 customer => one fruit at level 2
+  // Then ramp up from there
+  let minCustomers = 1; 
+  let maxCustomers = Math.min(10, 1 + Math.floor(levelNumber / 5)); 
+  // e.g., by level 50, you might have up to 10 customers
+
+  let numCustomers = getRandomInt(minCustomers, maxCustomers);
+  let customers = [];
+
+  for (let i = 0; i < numCustomers; i++) {
+    let requests = [];
+
+    // The higher the level, the more requests each customer might have
+    let numRequests = getRandomInt(1, 1 + Math.floor(levelNumber / 10));
+    // e.g., by level 10, each customer might ask for up to 2 requests, etc.
+
+    for (let r = 0; r < numRequests; r++) {
+      // Fruit type from your allFruits array
+      let fruitType = allFruits[Math.floor(Math.random() * allFruits.length)];
+      
+      // Minimum level = 2 (index=1) if you want to ensure at least level-2 requests
+      // Or vary with levelNumber to introduce higher fruit levels
+      let maxFruitLevelIndex = Math.min(3, Math.floor(levelNumber / 5)); 
+      // so by level 20, we might allow up to level-3 fruit
+      // or tweak logic as you see fit
+
+      let fruitLevel = getRandomInt(1, maxFruitLevelIndex); 
+      // or always at least 2 if you want hierarchy 2
+
+      requests.push({
+        fruit: fruitType,
+        level: fruitLevel,
+        // Optionally define quantity, if you plan to support multiple of the same fruit
+        quantity: 1
+      });
+    }
+
+    customers.push({
+      id: i + 1,
+      requests,
+      fulfilled: false
+    });
+  }
+
+  // Special case: If this is level 1, ensure at least one request is L2 exactly
+  if (levelNumber === 1) {
+    customers = [{
+      id: 1,
+      requests: [{
+        fruit: "Banana", // or pick randomly
+        level: 1,        // index=1 => "level 2" visually
+        quantity: 1
+      }],
+      fulfilled: false
+    }];
+  }
+
+  return customers;
+}
+
+// A helper for random integers in [min, max]
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 
 
 function resetCustomers() {
-    customers = generateRandomCustomers(3); // Reset with new random customers
+    // Instead of random 3, we call our new generateLevel
+    customers = generateLevel(level);
 
-    // Clear the cup by removing all fruit bodies from the Matter.js world
+    // Clear the cup...
     Composite.allBodies(world).forEach(body => {
-        if (body.fruitType) { // Only remove bodies that represent fruits
-            Composite.remove(world, body);
-        }
+      if (body.fruitType) {
+        Composite.remove(world, body);
+      }
     });
 
-    console.log("Cup cleared and customers reset for the next level.");
+    console.log("Cup cleared and customers reset for level " + level);
 }
 
 
@@ -398,25 +485,52 @@ function resetCustomers() {
             return customers.every(customer => customer.fulfilled);
         }
 
-        function checkCustomerRequests(fruit) {
-    customers.forEach(customer => {
-        customer.requests.forEach(request => {
-            if (
-                !request.fulfilled &&
-                request.fruit === fruit.fruitType &&
-                request.level === fruit.fruitLevel
-            ) {
-                request.fulfilled = true; // Mark the request as fulfilled
-                Composite.remove(world, fruit); // Remove the fruit from the world
+        function checkCustomerRequests() {
+    customers.forEach((customer) => {
+        if (!customer.fulfilled) {
+            // Check if all requested fruits are in the cup
+            const allInCup = customer.requests.every((request) =>
+                Composite.allBodies(world).some(
+                    (body) =>
+                        body.fruitType === request.fruit &&
+                        body.fruitLevel === request.level
+                )
+            );
+
+            if (allInCup) {
+                // Remove requested fruits from the cup
+                customer.requests.forEach((request) => {
+                    Composite.allBodies(world).forEach((body) => {
+                        if (
+                            body.fruitType === request.fruit &&
+                            body.fruitLevel === request.level
+                        ) {
+                            Composite.remove(world, body);
+                        }
+                    });
+                });
+
+                // Mark customer as fulfilled
+                customer.fulfilled = true;
             }
-        });
+        }
     });
+
+    // Check if all customers are fulfilled
+    if (checkAllCustomersFulfilled()) {
+        showPopupAndProceed();
+    }
+}
+
+
+
+
 
     // Check if all customers are fulfilled
     if (customers.every(customer => customer.requests.every(req => req.fulfilled))) {
         showPopupAndProceed();
     }
-}
+
 
         function getRandomFruitType() {
             return allFruits[Math.floor(Math.random() * allFruits.length)];
@@ -475,50 +589,60 @@ function resetCustomers() {
     fruit.hierarchyText = (level + 1) + "x"; // Add the hierarchy text (e.g., 1x, 2x, 3x)
     return fruit;
 }
-        function analyzeCup() {
-            var fruitCounts = {};
-            Composite.allBodies(world).forEach(function(body) {
-                if (body.fruitType) {
-                    var key = body.fruitType + "_L" + body.fruitLevel;
-                    if (!fruitCounts[key]) fruitCounts[key] = 0;
-                    fruitCounts[key]++;
+function analyzeCup() {
+    Composite.allBodies(world).forEach((body) => {
+        if (body.fruitType) {
+            body.highlight = false; // Reset highlight
 
-                    // 2.2. Check if the fruit has fallen out of the cup
-                    if (body.position.y > cupBottomY) {
-                        // Player loses if a fruit falls out of the cup
-                        showLossPopup();
-                    }
+            customers.forEach((customer) => {
+                if (!customer.fulfilled) {
+                    customer.requests.forEach((request) => {
+                        if (
+                            !request.fulfilled &&
+                            request.fruit === body.fruitType &&
+                            request.level === body.fruitLevel
+                        ) {
+                            body.highlight = true; // Highlight matching fruits
+                        }
+                    });
                 }
             });
-            console.log("Current fruits in cup:", fruitCounts);
         }
+    });
+}
 
-        function drawFruitsWithText(ctx) {
-    Composite.allBodies(world).forEach(function (body) {
+
+
+
+function drawFruitsWithText(ctx) {
+    Composite.allBodies(world).forEach((body) => {
         if (body.fruitType) {
-            // Get the fruit's properties
             var posX = body.position.x;
             var posY = body.position.y;
             var radius = fruitHierarchy[body.fruitType].levels[body.fruitLevel].radius;
             var bgColor = fruitHierarchy[body.fruitType].levels[body.fruitLevel].color;
 
-            // Determine the contrast color for the text
+            // Highlight the fruit if marked
+            if (body.highlight) {
+                ctx.beginPath();  
+                ctx.arc(posX, posY, radius + 3, 0, 2 * Math.PI); // Slightly larger circle for highlight
+                ctx.strokeStyle = "green";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
             const textColor = getContrastColor(bgColor);
 
-            // Draw the hierarchy text inside the fruit
+            // Draw hierarchy text
             ctx.font = "16px 'Sour Gummy', sans-serif";
             ctx.fillStyle = textColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(body.hierarchyText, posX, posY);
-
-            // Optional: Debug circle (not visible in game)
-            // ctx.beginPath();
-            // ctx.arc(posX, posY, radius, 0, 2 * Math.PI);
-            // ctx.stroke();
         }
     });
 }
+
 
 
 
