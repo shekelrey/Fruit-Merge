@@ -31,7 +31,7 @@
       position: absolute;
       width: 100vw;
       height: 100vh;
-      background-image: url('background3.jpg');
+      background-image: url('background5.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -45,7 +45,9 @@
       height: 100vh;
       top: 0;
       left: 10%;
-      overflow: hidden; 
+      overflow: hidden;
+      transform: scale(0.85); /* Scale down to 80% */
+      transform-origin: top left;
     }
     canvas {
       display: block;
@@ -54,12 +56,14 @@
     /* Separate Pachinko container on the right */
     .pachinko-container {
       position: absolute;
-      top: 20px;
-      left: 60%;
+      top: 150px;
+      left: 65%;
       width: 320px;   /* e.g. 300 + border */
       height: 420px;  /* 300px pachinko + 120px garden area */
       pointer-events: none; /* Let clicks pass through by default */
       z-index: 999;
+      transform: scale(0.8); /* Scale down to 80% */
+      transform-origin: top;
     }
     #pachinkoCanvas {
       width: 100%;
@@ -671,7 +675,7 @@
     function drawCustomers(ctx){
       let startX=250;
       let startY= cupCenterY + cupHeight/2 -520;
-      let horizontalSpacing=300;
+      let horizontalSpacing=200;
 
       ctx.font="20px 'Sour Gummy', sans-serif";
       ctx.fillStyle="black";
@@ -684,7 +688,7 @@
         ctx.fillText(`Customer ${customer.id}`, xPos+30, yPos);
 
         // center for fruit circles
-        let centerX=xPos;
+        let centerX=xPos+20;
         let centerY=yPos+40;
         let radius=30;
         let angleStep= (2*Math.PI)/ customer.requests.length;
