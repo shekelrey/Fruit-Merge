@@ -2,89 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=1024, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Fruit Merge Game + Pachinko</title>
-
+ 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Sour+Gummy&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Honk&display=swap" rel="stylesheet">
-
+ 
   <!-- Matter.js (for the main Fruit Merge game) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.min.js"></script>
   <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics-compat.js"></script>
-
+ 
   <style>
     body {
       margin: 0;
-      overflow: hidden;
-      position: relative;
       padding: 0;
-      background-size: cover; 
-      background-repeat: no-repeat; 
-      background-position: center; 
-      font-family: 'Sour Gummy', sans-serif;
+      background-color: #000; /* Optional fallback */
+      overflow: hidden;       /* Disable scrolling */
+      width: 1300px;         /* Fixed layout width */
+      height: 768px;         /* Fixed layout height */
     }
-    /* Shared background layer */
+ 
+    /* Fixed background layer */
     #background-layer {
-      position: absolute;
-      width: 100vw;
-      height: 100vh;
-      background-image: url('background5.jpg');
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 1300px;
+      height: 731px;
+      background-image: url('background7.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      z-index: -1;
+      z-index: -1; /* Keep behind everything else */
     }
-
-    /* Main game container (Matter.js) */
+ 
+    /* Main game container is also fixed to avoid movement */
     #game-container {
-      position: absolute;
-      width: 100vw;
-      height: 100vh;
+      position: fixed;        /* Pin to the top-left to match the background */
       top: 0;
-      left: 100px;
+      left: 0;
+      width: 1024px;
+      height: 768px;
       overflow: hidden;
-      transform: scale(0.85); /* Scale down to 80% */
+      transform: scale(0.9); /* Scale down to 80% */
       transform-origin: top left;
     }
+ 
     canvas {
       display: block;
+      width: 1024px;  /* Fixed canvas width */
+      height: 768px; /* Fixed canvas height */
     }
-
-    /* Separate Pachinko container on the right */
+ 
     .pachinko-container {
       position: absolute;
-      top: 150px;
-      left: 850px;
-      width: 320px;   /* e.g. 300 + border */
-      height: 420px;  /* 300px pachinko + 120px garden area */
-      pointer-events: none; /* Let clicks pass through by default */
-      z-index: 999;
-      transform: scale(0.8); /* Scale down to 80% */
-      transform-origin: top;
+      top: 100px; /* Adjust as needed */
+      left: 800px;
+      width: 320px;
+      height: 500px;
+      pointer-events: none;  /* Let clicks pass through (if desired) */
     }
+ 
     #pachinkoCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
+      width: 320px;
+      height: 500px;
       background: transparent;
-      pointer-events: auto; /* Re-enable clicks on just this canvas */
+      pointer-events: auto;  /* Re-enable clicks on this canvas */
       border: 2px solid rgba(255,255,255,0.2);
     }
   </style>
 </head>
-
+ 
 <body>
   <div id="background-layer"></div>
   <div id="game-container"></div>
-
-  <!-- The Pachinko container & canvas -->
+ 
+  <!-- Pachinko container & canvas -->
   <div class="pachinko-container">
     <canvas id="pachinkoCanvas"></canvas>
   </div>
-
+ 
   <script>
     /**************************************************************
      * 1) Firebase Initialization
@@ -100,10 +100,9 @@
     };
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
-
+ 
     /**************************************************************
      * 2) Main Fruit Merge Game with Matter.js
-     *    (Your entire core snippet, minus the "click to drop fruit")
      **************************************************************/
     var Engine = Matter.Engine,
         Render = Matter.Render,
@@ -111,55 +110,42 @@
         Composite = Matter.Composite,
         Bodies = Matter.Bodies,
         Events = Matter.Events;
-
+ 
     var engine = Engine.create(),
         world = engine.world;
-
-    var container = document.getElementById('game-container');
-    function createResponsiveRender() {
-      var render = Render.create({
-        element: container,
-        engine: engine,
-        options: {
-          width: window.innerWidth,
-          height: window.innerHeight,
-          wireframes: false,
-          background: null
-        }
-      });
-
-      window.addEventListener('resize', function () {
-        render.options.width = window.innerWidth;
-        render.options.height = window.innerHeight;
-        render.canvas.width = render.options.width;
-        render.canvas.height = render.options.height;
-      });
-
-      return render;
-    }
-
-    var render = createResponsiveRender();
-    Render.run(render);
+ 
+    var render = Matter.Render.create({
+      element: document.getElementById('game-container'),
+      engine: engine,
+      options: {
+        width: 1024,  
+        height: 768,
+        wireframes: false,
+        background: null
+      }
+    });
+ 
+    Matter.Render.run(render);
     var runner = Runner.create();
     Runner.run(runner, engine);
-
+ 
     // Cup setup
-    var cupCenterX = 500; 
+    var cupCenterX = 500;
     var cupCenterY = 420;
     var cupWidthTop = 400;
     var cupWidthBottom = 300;
     var cupHeight = 300;
     var cupBottomY = cupCenterY + cupHeight / 2;
-        
+       
     var level = 1;
-
+ 
     var bottom = Bodies.rectangle(cupCenterX, cupCenterY + cupHeight / 2, cupWidthBottom, 40, {
       isStatic: true,
       render: { fillStyle: '#555' }
     });
-
+ 
     var angle = Math.atan((cupWidthTop - cupWidthBottom) / (2 * cupHeight));
-
+ 
     var leftWall = Bodies.rectangle(
       cupCenterX - cupWidthBottom / 2 - 20,
       cupCenterY,
@@ -171,7 +157,7 @@
         render: { fillStyle: '#555' }
       }
     );
-
+ 
     var rightWall = Bodies.rectangle(
       cupCenterX + cupWidthBottom / 2 + 20,
       cupCenterY,
@@ -183,18 +169,14 @@
         render: { fillStyle: '#555' }
       }
     );
-
+ 
     Composite.add(world, [bottom, leftWall, rightWall]);
-
+ 
     var guideLine = { x: 500, y: 200 };
-
-    // We remove the "document.addEventListener('click', ...)" logic 
-    // so we don't conflict with the Pachinko's click.
-    // (You can still drop fruit via space bar or any other means.)
-
     let coins = 0; // track coins
-
+ 
     // 4-level fruit hierarchy
+    // ADDED TEXTURE FOR KIWI:
     var fruitHierarchy = {
       'Strawberry': {
         levels: [
@@ -222,10 +204,10 @@
       },
       'Kiwi': {
         levels: [
-          { color: '#c08459', radius: 15 },
-          { color: '#a66a3f', radius: 20 },
-          { color: '#8e5b36', radius: 25 },
-          { color: '#6f472a', radius: 30 }
+          { color: '#c08459', radius: 15, texture: 'watermelon_test.png' },
+          { color: '#a66a3f', radius: 20, texture: 'watermelon_test.png' },
+          { color: '#8e5b36', radius: 25, texture: 'watermelon_test.png' },
+          { color: '#6f472a', radius: 30, texture: 'watermelon_test.png' }
         ]
       },
       'Orange': {
@@ -241,20 +223,19 @@
           { color: '#B677AB', radius: 15 },
           { color: '#924685', radius: 20 },
           { color: '#6D2161', radius: 25 },
-          { color: '#5B144F', radius: 30 }   
+          { color: '#5B144F', radius: 30 }  
         ]
       }
     };
     var allFruits = Object.keys(fruitHierarchy);
-
-    // Customers
+ 
+    // -------------- CUSTOMERS --------------
     let levelNumber = 1;
     let customers = generateLevel(levelNumber);
-
+ 
     function generateLevel(levelNumber) {
-      // your custom logic
-      let minCustomers = 1; 
-      let maxCustomers = Math.min(10, 1 + Math.floor(levelNumber / 5)); 
+      let minCustomers = 1;
+      let maxCustomers = Math.min(10, 1 + Math.floor(levelNumber / 5));
       let numCustomers = getRandomInt(minCustomers, maxCustomers);
       let customers = [];
       for (let i=0; i<numCustomers; i++){
@@ -276,7 +257,7 @@
           fulfilled: false
         });
       }
-
+ 
       // If level=1 => special single Banana L2
       if (levelNumber===1){
         customers=[{
@@ -291,11 +272,11 @@
       }
       return customers;
     }
-
+ 
     function getRandomInt(min, max){
       return Math.floor(Math.random()* (max-min+1))+min;
     }
-
+ 
     function resetCustomers(){
       customers= generateLevel(level);
       Composite.allBodies(world).forEach(body=>{
@@ -305,24 +286,35 @@
       });
       console.log("Cup cleared + customers reset for level "+level);
     }
-
-    // main collisions, merges, etc.
+   
+ 
+    // -------------- CREATE FRUIT (key function) --------------
     function createFruit(x,y,fruitType,level){
       let type=fruitHierarchy[fruitType];
       let lvlData= type.levels[level];
-      let fruit = Bodies.circle(x,y,lvlData.radius,{
-        restitution:0.5,
+ 
+      // ADDED: If texture is specified, use sprite; otherwise use fillStyle
+      let fruit = Bodies.circle(x, y, lvlData.radius, {
+        restitution: 0.5,
         label: fruitType,
-        render:{
-          fillStyle:lvlData.color
-        }
+        render: lvlData.texture
+          ? {
+              sprite: {
+                texture: lvlData.texture,
+                xScale: (lvlData.radius * 2) / 100,
+                yScale: (lvlData.radius * 2) / 100
+              }
+            }
+          : {
+              fillStyle: lvlData.color
+            }
       });
       fruit.fruitType= fruitType;
       fruit.fruitLevel= level;
       fruit.hierarchyText= (level+1);
       return fruit;
     }
-
+ 
     function dropFruit(){
       let curr= currentFruit();
       let fruit= createFruit(guideLine.x,200,curr.type,curr.level);
@@ -331,7 +323,7 @@
       upcomingFruits.shift();
       upcomingFruits.push( getRandomFruitEntry() );
     }
-
+ 
     var upcomingFruits = [
       getRandomFruitEntry(),
       getRandomFruitEntry(),
@@ -340,14 +332,14 @@
       getRandomFruitEntry()
     ];
     function currentFruit(){ return upcomingFruits[0]; }
-
+ 
     function getRandomFruitEntry(){
       return {
         type: allFruits[Math.floor(Math.random()*allFruits.length)],
         level: 0
       };
     }
-
+ 
     function analyzeCup(){
       Composite.allBodies(world).forEach((body)=>{
         if(body.fruitType){
@@ -368,82 +360,70 @@
         }
       });
     }
-
+ 
     function showLossPopup() {
-            // Check if the popup already exists to avoid duplicates
-            if (document.getElementById('popupOverlay')) return;
-
-            // Create an overlay to block interactions
-            var overlay = document.createElement('div');
-            overlay.id = 'popupOverlay';
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100vw';
-            overlay.style.height = '100vh';
-            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black
-            overlay.style.zIndex = '999'; // Below the popup
-            document.body.appendChild(overlay);
-
-            // Create a loss popup overlay
-            var popup = document.createElement('div');
-            popup.id = 'lossPopup'; // Add an ID to the popup for easy reference
-            popup.style.position = 'absolute';
-            popup.style.top = '500px';
-            popup.style.left = '50%';
-            popup.style.transform = 'translate(-50%, -50%)';
-            popup.style.padding = '20px';
-            popup.style.backgroundColor = 'white';
-            popup.style.border = '2px solid black';
-            popup.style.zIndex = '1000'; // Above the overlay
-            popup.innerHTML = `
-                <p>You Lost! A fruit fell out of the cup.</p>
-                <button id="restartLevelBtn">Restart Level</button>
-            `;
-            document.body.appendChild(popup);
-
-            // Attach event to restart the level when the button is clicked
-            var restartLevelButton = document.getElementById('restartLevelBtn');
-            if (restartLevelButton) {
-                restartLevelButton.addEventListener('click', function () {
-                    // Remove the popup and overlay
-                    var popup = document.getElementById('lossPopup');
-                    var overlay = document.getElementById('popupOverlay');
-                    if (popup) document.body.removeChild(popup);
-                    if (overlay) document.body.removeChild(overlay);
-
-                    // Restart the level
-                    resetLevel();
-                });
-            }
+      if (document.getElementById('popupOverlay')) return;
+ 
+      var overlay = document.createElement('div');
+      overlay.id = 'popupOverlay';
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100vw';
+      overlay.style.height = '100vh';
+      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      overlay.style.zIndex = '999';
+      document.body.appendChild(overlay);
+ 
+      var popup = document.createElement('div');
+      popup.id = 'lossPopup';
+      popup.style.position = 'absolute';
+      popup.style.top = '500px';
+      popup.style.left = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      popup.style.padding = '20px';
+      popup.style.backgroundColor = 'white';
+      popup.style.border = '2px solid black';
+      popup.style.zIndex = '1000';
+      popup.innerHTML = `
+          <p>You Lost! A fruit fell out of the cup.</p>
+          <button id="restartLevelBtn">Restart Level</button>
+      `;
+      document.body.appendChild(popup);
+ 
+      var restartLevelButton = document.getElementById('restartLevelBtn');
+      if (restartLevelButton) {
+          restartLevelButton.addEventListener('click', function () {
+              var popup = document.getElementById('lossPopup');
+              var overlay = document.getElementById('popupOverlay');
+              if (popup) document.body.removeChild(popup);
+              if (overlay) document.body.removeChild(overlay);
+ 
+              resetLevel();
+          });
+      }
+    }
+ 
+    function resetLevel() {
+      console.log(`Restarting level ${level}...`);
+      resetCustomers();
+      Composite.allBodies(world).forEach(body => {
+        if (body.fruitType) {
+            Composite.remove(world, body);
         }
-
-        function resetLevel() {
-            // Keep the current level unchanged
-            console.log(`Restarting level ${level}...`);
-
-            // Reset customers (or any other game entities tied to the level)
-            resetCustomers();
-
-            // Clear the cup by removing all fruit bodies from the Matter.js world
-            Composite.allBodies(world).forEach(body => {
-                if (body.fruitType) {
-                    Composite.remove(world, body);
-                }
-            });
-
-            console.log("Level restarted and cup cleared.");
-        }
-
-    function mergeFruits(bodyA,bodyB){
+      });
+      console.log("Level restarted and cup cleared.");
+    }
+ 
+    function mergeFruits(bodyA, bodyB){
       let fruitType= bodyA.fruitType;
       let level= bodyA.fruitLevel;
       let typeData= fruitHierarchy[fruitType];
       let maxLevel= typeData.levels.length-1;
-
+ 
       Composite.remove(world,bodyA);
       Composite.remove(world,bodyB);
-
+ 
       if(level===maxLevel){
         coins+=5;
         console.log("5 coins added (max level merge). total:"+ coins);
@@ -455,7 +435,7 @@
         Composite.add(world, merged);
       }
     }
-
+ 
     Events.on(engine,'collisionStart',(event)=>{
       let pairs= event.pairs;
       pairs.forEach((pair)=>{
@@ -470,7 +450,7 @@
         if(bodyB.fruitType) checkCustomerRequests(bodyB);
       });
     });
-
+ 
     function checkCustomerRequests(){
       customers.forEach(customer=>{
         if(!customer.fulfilled){
@@ -480,7 +460,6 @@
             )
           );
           if(allInCup){
-            // remove from cup
             customer.requests.forEach(req=>{
               Composite.allBodies(world).forEach(body=>{
                 if(body.fruitType===req.fruit && body.fruitLevel===req.level){
@@ -496,78 +475,63 @@
         showPopupAndProceed();
       }
     }
-
-        function showPopupAndProceed() {
-          // Check if the popup already exists to avoid duplicates
-          if (document.getElementById('popupOverlay')) return;
-
-          // Pause the game
-          gamePaused = true;
-
-          // Add 10 coins when the level is completed
-          coins += 10;
-
-          // Create an overlay to block interactions
-          var overlay = document.createElement('div');
-          overlay.id = 'popupOverlay';
-          overlay.style.position = 'fixed';
-          overlay.style.top = '0';
-          overlay.style.left = '0';
-          overlay.style.width = '100vw';
-          overlay.style.height = '100vh';
-          overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black
-          overlay.style.zIndex = '999'; // Below the popup
-          document.body.appendChild(overlay);
-
-          // Create a popup overlay
-          var popup = document.createElement('div');
-          popup.id = 'popup'; // Add an ID to the popup for easy reference
-          popup.style.position = 'absolute';
-          popup.style.top = '500px';
-          popup.style.left = '50%';
-          popup.style.transform = 'translate(-50%, -50%)';
-          popup.style.padding = '20px';
-          popup.style.backgroundColor = 'white';
-          popup.style.border = '2px solid black';
-          popup.style.zIndex = '1000'; // Above the overlay
-          popup.innerHTML = `
-              <p>Congratulations! You've completed this level!</p>
-              <p>You have earned 10 coins!</p>
-              <p>Total Coins: ${coins}</p>
-              <button id="nextLevelBtn">Next Level</button>
-          `;
-          document.body.appendChild(popup);
-
-          // Ensure the button event is correctly attached after the popup is added
-          var nextLevelButton = document.getElementById('nextLevelBtn');
-          if (nextLevelButton) {
-              nextLevelButton.addEventListener('click', function (event) {
-                  // Prevent the event from propagating further
-                  event.preventDefault();
-                  event.stopPropagation();
-
-                  // Remove the popup and overlay
-                  var popup = document.getElementById('popup');
-                  var overlay = document.getElementById('popupOverlay');
-                  if (popup) document.body.removeChild(popup);
-                  if (overlay) document.body.removeChild(overlay);
-
-                  // Resume the game
-                  gamePaused = false;
-
-                  // Increment the level
-                  level++;
-
-                  // Reset customers and clear the cup
-                  resetCustomers();
-              });
-          }
+ 
+    function showPopupAndProceed() {
+      if (document.getElementById('popupOverlay')) return;
+      gamePaused = true;
+      coins += 10;
+ 
+      var overlay = document.createElement('div');
+      overlay.id = 'popupOverlay';
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100vw';
+      overlay.style.height = '100vh';
+      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      overlay.style.zIndex = '999';
+      document.body.appendChild(overlay);
+ 
+      var popup = document.createElement('div');
+      popup.id = 'popup';
+      popup.style.position = 'absolute';
+      popup.style.top = '500px';
+      popup.style.left = '50%';
+      popup.style.transform = 'translate(-50%, -50%)';
+      popup.style.padding = '20px';
+      popup.style.backgroundColor = 'white';
+      popup.style.border = '2px solid black';
+      popup.style.zIndex = '1000';
+      popup.innerHTML = `
+          <p>Congratulations! You've completed this level!</p>
+          <p>You have earned 10 coins!</p>
+          <p>Total Coins: ${coins}</p>
+          <button id="nextLevelBtn">Next Level</button>
+      `;
+      document.body.appendChild(popup);
+ 
+      var nextLevelButton = document.getElementById('nextLevelBtn');
+      if (nextLevelButton) {
+          nextLevelButton.addEventListener('click', function (event) {
+              event.preventDefault();
+              event.stopPropagation();
+ 
+              var popup = document.getElementById('popup');
+              var overlay = document.getElementById('popupOverlay');
+              if (popup) document.body.removeChild(popup);
+              if (overlay) document.body.removeChild(overlay);
+ 
+              gamePaused = false;
+              level++;
+              resetCustomers();
+          });
       }
-
-    // Key controls (arrow, space)
+    }
+ 
+    // Key controls
     var moveLeft=false, moveRight=false, moveSpeed=5;
     var isSpacePressed=false, canDropFruit=true, fruitCooldownTime=300;
-
+ 
     document.addEventListener('keydown', function(event){
       if(event.key==='ArrowLeft'){
         moveLeft=true;
@@ -585,31 +549,27 @@
       if(event.key==='ArrowRight') moveRight=false;
       if(event.key===' ') isSpacePressed=false;
     });
-
-    // Render loop
+ 
     (function renderLoop(){
-      // move guide line
-      let leftLimit= cupCenterX - (cupWidthTop/2)+20;
-      let rightLimit= cupCenterX + (cupWidthTop/2)-20;
-      if(moveLeft && guideLine.x> leftLimit) guideLine.x-= moveSpeed;
-      if(moveRight && guideLine.x< rightLimit) guideLine.x+= moveSpeed;
-
+      if(moveLeft && guideLine.x> cupCenterX - (cupWidthTop/2)+20) guideLine.x-= moveSpeed;
+      if(moveRight && guideLine.x< cupCenterX + (cupWidthTop/2)-20) guideLine.x+= moveSpeed;
+ 
       var ctx= render.context;
       ctx.clearRect(0,0, render.canvas.width, render.canvas.height);
       Render.world(render);
-
+ 
       drawGuideLine(ctx);
       drawUpcomingFruits(ctx);
       drawCustomers(ctx);
       drawCurrentLevel(ctx);
       displayCoins(ctx);
-
+ 
       drawFruitsWithText(ctx);
       analyzeCup();
-
+ 
       requestAnimationFrame(renderLoop);
     })();
-
+ 
     function drawGuideLine(ctx){
       ctx.beginPath();
       ctx.moveTo(guideLine.x,240);
@@ -619,51 +579,55 @@
       ctx.setLineDash([5,5]);
       ctx.stroke();
       ctx.setLineDash([]);
-
+ 
       let curr= currentFruit();
       let type= fruitHierarchy[curr.type];
       let lvlData= type.levels[curr.level];
-
+ 
+      // The "preview" circle for the dropping fruit
+      // (If we want to show the texture, we'd need to draw an image manually.
+      //  This simpler approach just draws a colored circle.)
       ctx.beginPath();
       ctx.arc(guideLine.x,200,lvlData.radius,0,2*Math.PI);
       ctx.fillStyle= lvlData.color;
       ctx.fill();
       ctx.strokeStyle= "black";
       ctx.stroke();
-
+ 
       const textColor= getContrastColor(lvlData.color);
       ctx.font= "16px 'Sour Gummy', sans-serif";
       ctx.fillStyle= textColor;
       ctx.textAlign="center";
       ctx.textBaseline="middle";
       ctx.fillText((curr.level+1), guideLine.x, 200);
-
+ 
       ctx.fillStyle="black";
       ctx.font= "18px 'Sour Gummy', sans-serif";
       ctx.fillText(curr.type, guideLine.x,230);
     }
+ 
     function drawUpcomingFruits(ctx){
       let startX=60;
       let startY=350;
       let verticalSpacing=70;
-
+ 
       ctx.font="20px 'Sour Gummy', sans-serif";
       ctx.fillStyle="black";
       ctx.fillText("Upcoming:",startX+10,startY-50);
-
-      for(let i=1;i<upcomingFruits.length;i++){
+ 
+      for(let i=1; i<upcomingFruits.length;i++){
         let fruitData= upcomingFruits[i];
         let type= fruitHierarchy[fruitData.type];
         let lvlData= type.levels[fruitData.level];
         let yPos= startY+ (i-1)*verticalSpacing;
-
+ 
         ctx.beginPath();
         ctx.arc(startX,yPos,lvlData.radius,0,2*Math.PI);
         ctx.fillStyle= lvlData.color;
         ctx.fill();
         ctx.strokeStyle="black";
         ctx.stroke();
-
+ 
         const textColor= getContrastColor(lvlData.color);
         ctx.font="16px 'Sour Gummy', sans-serif";
         ctx.fillStyle= textColor;
@@ -672,33 +636,33 @@
         ctx.fillText((fruitData.level+1), startX, yPos);
       }
     }
+ 
     function drawCustomers(ctx){
       let startX=250;
       let startY= cupCenterY + cupHeight/2 -520;
-      let horizontalSpacing=200;
-
+      let horizontalSpacing=300;
+ 
       ctx.font="20px 'Sour Gummy', sans-serif";
       ctx.fillStyle="black";
       ctx.fillText("Customer Requests:", startX+30, startY-30);
-
+ 
       customers.forEach((customer,index)=>{
         let xPos= startX+ index*horizontalSpacing;
         let yPos= startY;
         ctx.fillStyle= customer.fulfilled? "green":"black";
         ctx.fillText(`Customer ${customer.id}`, xPos+30, yPos);
-
-        // center for fruit circles
-        let centerX=xPos+20;
+ 
+        let centerX=xPos;
         let centerY=yPos+40;
         let radius=30;
         let angleStep= (2*Math.PI)/ customer.requests.length;
-
+ 
         customer.requests.forEach((request, reqIndex)=>{
           let type= fruitHierarchy[request.fruit];
           let lvlData= type.levels[request.level];
           let fruitX= centerX + radius*Math.cos(reqIndex * angleStep);
           let fruitY= centerY + radius*Math.sin(reqIndex * angleStep);
-
+ 
           let inCup= Composite.allBodies(world).some(
             (body)=> body.fruitType=== request.fruit && body.fruitLevel=== request.level
           );
@@ -709,11 +673,11 @@
           ctx.strokeStyle= (inCup && !customer.fulfilled)? "green":"black";
           ctx.lineWidth= (inCup && !customer.fulfilled)? 3:1;
           ctx.stroke();
-
+ 
           const textColor= getContrastColor(lvlData.color);
-          ctx.font="16px 'Sour Gummy', sans-serif";
           const effectiveColor= customer.fulfilled ? "#aaaaaa": lvlData.color;
           const txtFillColor= getContrastColor(effectiveColor);
+          ctx.font="16px 'Sour Gummy', sans-serif";
           ctx.fillStyle= txtFillColor;
           ctx.textAlign="center";
           ctx.textBaseline="middle";
@@ -721,17 +685,19 @@
         });
       });
     }
+ 
     function drawCurrentLevel(ctx){
       ctx.font="40px 'Honk', sans-serif";
       ctx.fillStyle="black";
       ctx.fillText("Level: "+level,80,30);
     }
+ 
     function displayCoins(ctx){
       ctx.font="40px 'Honk', sans-serif";
       ctx.fillStyle="black";
       ctx.fillText("Coins: "+ coins,82,80);
     }
-
+ 
     function drawFruitsWithText(ctx){
       Composite.allBodies(world).forEach(body=>{
         if(body.fruitType){
@@ -739,7 +705,7 @@
           let posY= body.position.y;
           let radius= fruitHierarchy[body.fruitType].levels[body.fruitLevel].radius;
           let bgColor= fruitHierarchy[body.fruitType].levels[body.fruitLevel].color;
-
+ 
           if(body.highlight){
             ctx.beginPath();
             ctx.arc(posX, posY, radius+3, 0,2*Math.PI);
@@ -747,6 +713,8 @@
             ctx.lineWidth=2;
             ctx.stroke();
           }
+          // Draw the fruit-level text over the sprite
+          // (or fill color if no sprite)
           const textColor= getContrastColor(bgColor);
           ctx.font="16px 'Sour Gummy', sans-serif";
           ctx.fillStyle= textColor;
@@ -756,42 +724,36 @@
         }
       });
     }
-
+ 
     function getContrastColor(hexColor){
-      // convert hex to RGB
       let r= parseInt(hexColor.slice(1,3),16);
       let g= parseInt(hexColor.slice(3,5),16);
       let b= parseInt(hexColor.slice(5,7),16);
       let luminance= 0.2126*(r/255)+ 0.7152*(g/255)+ 0.0722*(b/255);
       return luminance>0.5? "black": "white";
     }
-
+ 
     /**************************************************************
      * 3) PACHINKO CODE (Independent)
-     *    Renders on #pachinkoCanvas. Click to drop balls here.
      **************************************************************/
     const pachinkoCanvas = document.getElementById("pachinkoCanvas");
     const pCtx = pachinkoCanvas.getContext("2d");
-
+ 
     let pWidth = pachinkoCanvas.clientWidth;
     let pHeight= pachinkoCanvas.clientHeight;
     pachinkoCanvas.width= pWidth;
     pachinkoCanvas.height= pHeight;
-
-    // We'll do ~300px for the pachinko, ~120 for the garden
+ 
     let pachinkoFieldHeight= 300;
-    let gardenHeight= pHeight - pachinkoFieldHeight; // e.g. 120
-
-    // local data
+    let gardenHeight= pHeight - pachinkoFieldHeight;
+ 
     let ballCount= 20;
     const balls= [];
     const pegs= [];
-
-    // seeds + fruit grown
+ 
     let seeds= { Mango:0, Pineapple:0, Lichi:0 };
     let gardenFruits= { Mango:false, Pineapple:false, Lichi:false };
-
-    // baskets
+ 
     let baskets=[
       { x:0,y: pachinkoFieldHeight-20, w:60,h:20, type:"Mango"     },
       { x:60,y:pachinkoFieldHeight-20, w:60,h:20, type:"Pineapple" },
@@ -800,19 +762,17 @@
     ];
     let basketSpeed= 1.5;
     let basketDirection=1;
-
-    // ball physics
+ 
     const ballRadius2= 8;
     const pegRadius2= 4;
     const gravity2= 0.3;
     const damping2= 0.8;
     const friction2= 0.98;
-
-    // drop line
+ 
     let dropX= pWidth/2;
     let dropSpeed2=2;
     let dropDir2= 1;
-
+ 
     function createPegs2(){
       pegs.length=0;
       let spacingX=40;
@@ -829,7 +789,7 @@
         }
       }
     }
-
+ 
     function initPachinko(){
       createPegs2();
       let totalW= baskets.length*60;
@@ -841,21 +801,19 @@
       dropX= pWidth/2;
     }
     initPachinko();
-
+ 
     function pachinkoLoop(){
       updatePachinko();
       drawPachinko();
       requestAnimationFrame(pachinkoLoop);
     }
     pachinkoLoop();
-
+ 
     function updatePachinko(){
-      // drop line
       dropX+= dropSpeed2*dropDir2;
       if(dropX<15){ dropX=15; dropDir2=1;}
       if(dropX> pWidth-15){ dropX= pWidth-15; dropDir2=-1;}
-
-      // baskets
+ 
       baskets.forEach(b=> b.x+= basketSpeed* basketDirection);
       let leftB= baskets[0].x;
       let rightB= baskets[baskets.length-1].x+ baskets[baskets.length-1].w;
@@ -868,16 +826,14 @@
         baskets.forEach(b=> b.x+= shift);
         basketDirection=-1;
       }
-
-      // balls
+ 
       for(let i= balls.length-1; i>=0; i--){
         let ball= balls[i];
         ball.vy+= gravity2;
         ball.vx*= friction2;
         ball.x+= ball.vx;
         ball.y+= ball.vy;
-
-        // pegs
+ 
         for(let peg of pegs){
           let dx= ball.x- peg.x;
           let dy= ball.y- peg.y;
@@ -887,7 +843,7 @@
             let overlap= (ballRadius2+ pegRadius2)-dist;
             ball.x+= Math.cos(angle)*overlap;
             ball.y+= Math.sin(angle)*overlap;
-
+ 
             let nx= dx/dist;
             let ny= dy/dist;
             let proj= ball.vx*nx + ball.vy*ny;
@@ -897,14 +853,17 @@
             ball.vy*= damping2;
           }
         }
-
-        // side walls
-        if(ball.x< ballRadius2){ ball.x= ballRadius2; ball.vx=-ball.vx*damping2; }
-        if(ball.x> pWidth- ballRadius2){ ball.x= pWidth- ballRadius2; ball.vx=-ball.vx*damping2; }
-
-        // bottom
+ 
+        if(ball.x< ballRadius2){
+          ball.x= ballRadius2;
+          ball.vx=-ball.vx*damping2;
+        }
+        if(ball.x> pWidth- ballRadius2){
+          ball.x= pWidth- ballRadius2;
+          ball.vx=-ball.vx*damping2;
+        }
+ 
         if(ball.y> pachinkoFieldHeight- ballRadius2){
-          // check basket
           for(let bk of baskets){
             if(ball.x> bk.x && ball.x< bk.x+ bk.w){
               if(bk.type && gardenFruits[bk.type]=== false){
@@ -920,26 +879,24 @@
         }
       }
     }
-
+ 
     function drawPachinko(){
       pCtx.clearRect(0,0,pWidth,pHeight);
-
-      // pegs
+ 
       pCtx.fillStyle='#888';
       for(let peg of pegs){
         pCtx.beginPath();
         pCtx.arc(peg.x, peg.y, pegRadius2,0,2*Math.PI);
         pCtx.fill();
       }
-
-      // baskets
+ 
       for(let bk of baskets){
         if(!bk.type) pCtx.fillStyle='#444';
         else if(bk.type==='Mango') pCtx.fillStyle='#ffaa00';
         else if(bk.type==='Pineapple') pCtx.fillStyle='#ccff55';
         else if(bk.type==='Lichi') pCtx.fillStyle='#ff66aa';
         pCtx.fillRect(bk.x,bk.y,bk.w,bk.h);
-
+ 
         pCtx.fillStyle='#000';
         pCtx.font="14px 'Sour Gummy', sans-serif";
         pCtx.textAlign='center';
@@ -947,16 +904,14 @@
         let label= bk.type? bk.type:"None";
         pCtx.fillText(label, bk.x+ bk.w/2, bk.y+ bk.h/2);
       }
-
-      // balls
+ 
       pCtx.fillStyle='#0e9c65';
       for(let b of balls){
         pCtx.beginPath();
         pCtx.arc(b.x,b.y, ballRadius2,0,2*Math.PI);
         pCtx.fill();
       }
-
-      // drop line
+ 
       pCtx.strokeStyle='#0f0';
       pCtx.beginPath();
       pCtx.moveTo(dropX,0);
@@ -966,30 +921,27 @@
       pCtx.arc(dropX,30,5,0,2*Math.PI);
       pCtx.fillStyle='#0f0';
       pCtx.fill();
-
-      // garden
+ 
       drawGarden();
-      // ball count HUD
       pCtx.fillStyle='#000';
       pCtx.font="16px 'Sour Gummy', sans-serif";
       pCtx.fillText(`Seeds: ${ballCount}`, 10, 20);
     }
-
+ 
     function drawGarden(){
-      pCtx.fillStyle='#88cc88';
+      pCtx.fillStyle='#A7C957';
       pCtx.fillRect(0, pachinkoFieldHeight, pWidth, gardenHeight);
-
+ 
       let lanes={
         Mango:{ xStart:20, yCenter: pachinkoFieldHeight+30, color:'#ffaa00'},
         Pineapple:{ xStart:20, yCenter: pachinkoFieldHeight+60, color:'#ccff55'},
         Lichi:{ xStart:20, yCenter: pachinkoFieldHeight+90, color:'#ff66aa'}
       };
-
+ 
       Object.keys(seeds).forEach(fruit=>{
         let lane= lanes[fruit];
         let seedCount= seeds[fruit];
         if(gardenFruits[fruit]){
-          // big fruit
           pCtx.beginPath();
           pCtx.arc(pWidth-40, lane.yCenter,20,0,2*Math.PI);
           pCtx.fillStyle= lane.color;
@@ -1000,8 +952,8 @@
           pCtx.textBaseline='middle';
           pCtx.fillText(fruit, pWidth-40, lane.yCenter);
         } else {
-          // seeds
-          let radius=6; let spacing=20;
+          let radius=6;
+          let spacing=20;
           for(let i=0; i< seedCount; i++){
             let seedX= lane.xStart + i*(radius*2+ spacing);
             pCtx.beginPath();
@@ -1017,8 +969,7 @@
         }
       });
     }
-
-    // Let the user click the Pachinko canvas to drop a ball
+ 
     pachinkoCanvas.addEventListener('click', ()=>{
       if(ballCount>0){
         ballCount--;
@@ -1033,3 +984,4 @@
   </script>
 </body>
 </html>
+ 
