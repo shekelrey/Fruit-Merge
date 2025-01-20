@@ -47,7 +47,7 @@
       width: 1024px;
       height: 768px;
       overflow: hidden;
-      transform: scale(0.9); /* Scale down to 80% */
+      transform: scale(0.9); /* Scale down to 90% */
       transform-origin: top left;
     }
  
@@ -72,6 +72,36 @@
       background: transparent;
       pointer-events: auto;  /* Re-enable clicks on this canvas */
       border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    /* Simple popup styling */
+    #popupOverlay {
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      background-color: rgba(0,0,0,0.5); 
+      z-index: 999;
+    }
+    .popupBox {
+      position: absolute;
+      top: 50%; 
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border: 2px solid #333;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .popupBox h2 {
+      margin-top: 0;
+      font-family: sans-serif;
+    }
+    .popupBox button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -138,7 +168,10 @@
     var cupBottomY = cupCenterY + cupHeight / 2;
        
     var level = 1;
- 
+    var coins = 0;  // track coins
+    var seeds = 20; // track seeds (currency); starts at 20
+
+    // Cup bodies
     var bottom = Bodies.rectangle(cupCenterX, cupCenterY + cupHeight / 2, cupWidthBottom, 40, {
       isStatic: true,
       render: { fillStyle: '#555' }
@@ -173,10 +206,8 @@
     Composite.add(world, [bottom, leftWall, rightWall]);
  
     var guideLine = { x: 500, y: 200 };
-    let coins = 0; // track coins
  
     // 4-level fruit hierarchy
-    // ADDED TEXTURE FOR KIWI:
     var fruitHierarchy = {
       'Strawberry': {
         levels: [
@@ -188,7 +219,7 @@
       },
       'Banana': {
         levels: [
-          { color: '#FFF4BB', radius: 15 },
+          { color: '#FFF4BB', radius: 17 },
           { color: '#FFEE8F', radius: 20 },
           { color: '#FFE762', radius: 25 },
           { color: '#FFE135', radius: 30 }
@@ -196,7 +227,7 @@
       },
       'Blueberry': {
         levels: [
-          { color: '#7772B9', radius: 15 },
+          { color: '#7772B9', radius: 17 },
           { color: '#554FA2', radius: 20 },
           { color: '#464096', radius: 25 },
           { color: '#2E2B64', radius: 30 }
@@ -204,15 +235,15 @@
       },
       'Kiwi': {
         levels: [
-          { color: '#c08459', radius: 15, texture: 'watermelon_Test10.png' },
-          { color: '#a66a3f', radius: 20, texture: 'watermelon_Test10.png' },
-          { color: '#8e5b36', radius: 25, texture: 'watermelon_Test10.png' },
-          { color: '#6f472a', radius: 30, texture: 'watermelon_Test10.png' }
+          { color: '#c08459', radius: 17, texture: 'watermelon_Test9.png' },
+          { color: '#a66a3f', radius: 20, texture: 'watermelon_Test9.png' },
+          { color: '#8e5b36', radius: 25, texture: 'watermelon_Test9.png' },
+          { color: '#6f472a', radius: 30, texture: 'watermelon_Test9.png' }
         ]
       },
       'Orange': {
         levels: [
-          { color: '#ffcc80', radius: 15 },
+          { color: '#ffcc80', radius: 17 },
           { color: '#ffad33', radius: 20 },
           { color: '#ff9900', radius: 25 },
           { color: '#ff8000', radius: 30 }
@@ -220,7 +251,7 @@
       },
       'Grape': {
         levels: [
-          { color: '#B677AB', radius: 15 },
+          { color: '#B677AB', radius: 17 },
           { color: '#924685', radius: 20 },
           { color: '#6D2161', radius: 25 },
           { color: '#5B144F', radius: 30 }  
@@ -286,14 +317,13 @@
       });
       console.log("Cup cleared + customers reset for level "+level);
     }
-   
  
     // -------------- CREATE FRUIT (key function) --------------
     function createFruit(x,y,fruitType,level){
       let type=fruitHierarchy[fruitType];
       let lvlData= type.levels[level];
  
-      // ADDED: If texture is specified, use sprite; otherwise use fillStyle
+      // If texture is specified, use sprite; otherwise fillStyle
       let fruit = Bodies.circle(x, y, lvlData.radius, {
         restitution: 0.5,
         label: fruitType,
@@ -366,39 +396,21 @@
  
       var overlay = document.createElement('div');
       overlay.id = 'popupOverlay';
-      overlay.style.position = 'fixed';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100vw';
-      overlay.style.height = '100vh';
-      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-      overlay.style.zIndex = '999';
       document.body.appendChild(overlay);
  
       var popup = document.createElement('div');
-      popup.id = 'lossPopup';
-      popup.style.position = 'absolute';
-      popup.style.top = '500px';
-      popup.style.left = '50%';
-      popup.style.transform = 'translate(-50%, -50%)';
-      popup.style.padding = '20px';
-      popup.style.backgroundColor = 'white';
-      popup.style.border = '2px solid black';
-      popup.style.zIndex = '1000';
+      popup.className = 'popupBox';
       popup.innerHTML = `
-          <p>You Lost! A fruit fell out of the cup.</p>
+          <h2>You Lost!</h2>
+          <p>A fruit fell out of the cup.</p>
           <button id="restartLevelBtn">Restart Level</button>
       `;
-      document.body.appendChild(popup);
+      overlay.appendChild(popup);
  
       var restartLevelButton = document.getElementById('restartLevelBtn');
       if (restartLevelButton) {
           restartLevelButton.addEventListener('click', function () {
-              var popup = document.getElementById('lossPopup');
-              var overlay = document.getElementById('popupOverlay');
-              if (popup) document.body.removeChild(popup);
               if (overlay) document.body.removeChild(overlay);
- 
               resetLevel();
           });
       }
@@ -461,6 +473,7 @@
           );
           if(allInCup){
             customer.requests.forEach(req=>{
+              // remove them from the cup
               Composite.allBodies(world).forEach(body=>{
                 if(body.fruitType===req.fruit && body.fruitLevel===req.level){
                   Composite.remove(world,body);
@@ -483,32 +496,17 @@
  
       var overlay = document.createElement('div');
       overlay.id = 'popupOverlay';
-      overlay.style.position = 'fixed';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100vw';
-      overlay.style.height = '100vh';
-      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-      overlay.style.zIndex = '999';
       document.body.appendChild(overlay);
  
       var popup = document.createElement('div');
-      popup.id = 'popup';
-      popup.style.position = 'absolute';
-      popup.style.top = '500px';
-      popup.style.left = '50%';
-      popup.style.transform = 'translate(-50%, -50%)';
-      popup.style.padding = '20px';
-      popup.style.backgroundColor = 'white';
-      popup.style.border = '2px solid black';
-      popup.style.zIndex = '1000';
+      popup.className = 'popupBox';
       popup.innerHTML = `
-          <p>Congratulations! You've completed this level!</p>
+          <h2>Level Complete!</h2>
           <p>You have earned 10 coins!</p>
           <p>Total Coins: ${coins}</p>
           <button id="nextLevelBtn">Next Level</button>
       `;
-      document.body.appendChild(popup);
+      overlay.appendChild(popup);
  
       var nextLevelButton = document.getElementById('nextLevelBtn');
       if (nextLevelButton) {
@@ -516,10 +514,7 @@
               event.preventDefault();
               event.stopPropagation();
  
-              var popup = document.getElementById('popup');
-              var overlay = document.getElementById('popupOverlay');
-              if (popup) document.body.removeChild(popup);
-              if (overlay) document.body.removeChild(overlay);
+              document.body.removeChild(overlay);
  
               gamePaused = false;
               level++;
@@ -550,6 +545,7 @@
       if(event.key===' ') isSpacePressed=false;
     });
  
+    // ------------------- Canvas render loop -------------------
     (function renderLoop(){
       if(moveLeft && guideLine.x> cupCenterX - (cupWidthTop/2)+20) guideLine.x-= moveSpeed;
       if(moveRight && guideLine.x< cupCenterX + (cupWidthTop/2)-20) guideLine.x+= moveSpeed;
@@ -563,6 +559,7 @@
       drawCustomers(ctx);
       drawCurrentLevel(ctx);
       displayCoins(ctx);
+      displaySeeds(ctx);  // <--- new function to show seeds below coins
  
       drawFruitsWithText(ctx);
       analyzeCup();
@@ -584,9 +581,7 @@
       let type= fruitHierarchy[curr.type];
       let lvlData= type.levels[curr.level];
  
-      // The "preview" circle for the dropping fruit
-      // (If we want to show the texture, we'd need to draw an image manually.
-      //  This simpler approach just draws a colored circle.)
+      // The "preview" circle
       ctx.beginPath();
       ctx.arc(guideLine.x,200,lvlData.radius,0,2*Math.PI);
       ctx.fillStyle= lvlData.color;
@@ -697,6 +692,76 @@
       ctx.fillStyle="black";
       ctx.fillText("Coins: "+ coins,82,80);
     }
+
+    // (1) Draw Seeds below coins
+    function displaySeeds(ctx){
+      ctx.font="40px 'Honk', sans-serif";
+      ctx.fillStyle="black";
+      // We'll draw it around y=130
+      ctx.fillText("Seeds: "+ seeds, 82, 130);
+    }
+
+    // Add a click listener to detect clicks on the Seeds area in the canvas
+    render.canvas.addEventListener('click', (e) => {
+      // get bounding rect for the canvas
+      const rect = render.canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      
+      // Rough bounding box for "Seeds" text: x ~ 82..250, y ~ 100..140
+      if (clickX >= 82 && clickX <= 250 && clickY >= 100 && clickY <= 140) {
+        openSeedsPurchasePopup();
+      }
+    });
+
+    // (2) Open a popup that allows user to buy seeds
+    function openSeedsPurchasePopup(){
+      // If a popup is already open, do nothing
+      if(document.getElementById('popupOverlay')) return;
+
+      let overlay = document.createElement('div');
+      overlay.id = 'popupOverlay';
+      document.body.appendChild(overlay);
+
+      let popup = document.createElement('div');
+      popup.className = 'popupBox';
+      popup.innerHTML = `
+        <h2>Buy Seeds</h2>
+        <p>Each seed costs 10 coins. You have ${coins} coins.</p>
+        <p>Max seeds you can afford: ${Math.floor(coins/10)}</p>
+        <input type="range" id="seedRange" min="0" max="${Math.floor(coins/10)}" value="0" />
+        <span id="seedRangeValue">0</span>
+        <br/>
+        <button id="purchaseSeedsBtn">Purchase</button>
+        <button id="closePopupBtn">Cancel</button>
+      `;
+      overlay.appendChild(popup);
+
+      // Range input listener
+      let rangeEl = document.getElementById('seedRange');
+      let rangeValueEl = document.getElementById('seedRangeValue');
+      rangeEl.addEventListener('input', () => {
+        rangeValueEl.textContent = rangeEl.value;
+      });
+
+      // Purchase button
+      let purchaseBtn = document.getElementById('purchaseSeedsBtn');
+      purchaseBtn.addEventListener('click', () => {
+        let amountToBuy = parseInt(rangeEl.value);
+        if (amountToBuy > 0) {
+          let cost = amountToBuy * 10;
+          coins -= cost;
+          seeds += amountToBuy;
+        }
+        document.body.removeChild(overlay);
+      });
+
+      // Close/cancel button
+      let closeBtn = document.getElementById('closePopupBtn');
+      closeBtn.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+      });
+    }
  
     function drawFruitsWithText(ctx){
       Composite.allBodies(world).forEach(body=>{
@@ -714,7 +779,6 @@
             ctx.stroke();
           }
           // Draw the fruit-level text over the sprite
-          // (or fill color if no sprite)
           const textColor= getContrastColor(bgColor);
           ctx.font="16px 'Sour Gummy', sans-serif";
           ctx.fillStyle= textColor;
@@ -726,15 +790,21 @@
     }
  
     function getContrastColor(hexColor){
-      let r= parseInt(hexColor.slice(1,3),16);
-      let g= parseInt(hexColor.slice(3,5),16);
-      let b= parseInt(hexColor.slice(5,7),16);
+      // handle short color or no '#'
+      if(hexColor[0] === '#') hexColor = hexColor.slice(1);
+      if(hexColor.length < 6) {
+        // for simplicity, just return black
+        return "black";
+      }
+      let r= parseInt(hexColor.slice(0,2),16);
+      let g= parseInt(hexColor.slice(2,4),16);
+      let b= parseInt(hexColor.slice(4,6),16);
       let luminance= 0.2126*(r/255)+ 0.7152*(g/255)+ 0.0722*(b/255);
       return luminance>0.5? "black": "white";
     }
  
     /**************************************************************
-     * 3) PACHINKO CODE (Independent)
+     * 3) PACHINKO CODE
      **************************************************************/
     const pachinkoCanvas = document.getElementById("pachinkoCanvas");
     const pCtx = pachinkoCanvas.getContext("2d");
@@ -746,13 +816,14 @@
  
     let pachinkoFieldHeight= 300;
     let gardenHeight= pHeight - pachinkoFieldHeight;
- 
-    let ballCount= 20;
+
+    // We REMOVE ballCount=20; we use the global seeds variable instead
+    // We'll rename the old "seeds" object that stored Mango/Pineapple/Lichi to basketProgress
+    const basketProgress = { Mango:0, Pineapple:0, Lichi:0 };
+    let gardenFruits= { Mango:false, Pineapple:false, Lichi:false };
+
     const balls= [];
     const pegs= [];
- 
-    let seeds= { Mango:0, Pineapple:0, Lichi:0 };
-    let gardenFruits= { Mango:false, Pineapple:false, Lichi:false };
  
     let baskets=[
       { x:0,y: pachinkoFieldHeight-20, w:60,h:20, type:"Mango"     },
@@ -834,6 +905,7 @@
         ball.x+= ball.vx;
         ball.y+= ball.vy;
  
+        // Peg collisions
         for(let peg of pegs){
           let dx= ball.x- peg.x;
           let dy= ball.y- peg.y;
@@ -854,6 +926,7 @@
           }
         }
  
+        // Left/Right walls
         if(ball.x< ballRadius2){
           ball.x= ballRadius2;
           ball.vx=-ball.vx*damping2;
@@ -863,12 +936,15 @@
           ball.vx=-ball.vx*damping2;
         }
  
+        // Reached bottom (baskets)
         if(ball.y> pachinkoFieldHeight- ballRadius2){
           for(let bk of baskets){
             if(ball.x> bk.x && ball.x< bk.x+ bk.w){
+              // if basket has a fruit type, increment progress
               if(bk.type && gardenFruits[bk.type]=== false){
-                seeds[bk.type]++;
-                if(seeds[bk.type]>=5){
+                basketProgress[bk.type]++;
+                // If we get 5 seeds in that basket, "grow" the fruit
+                if(basketProgress[bk.type]>=5){
                   gardenFruits[bk.type]= true;
                 }
               }
@@ -883,6 +959,7 @@
     function drawPachinko(){
       pCtx.clearRect(0,0,pWidth,pHeight);
  
+      // Draw pegs
       pCtx.fillStyle='#888';
       for(let peg of pegs){
         pCtx.beginPath();
@@ -890,6 +967,7 @@
         pCtx.fill();
       }
  
+      // Draw baskets
       for(let bk of baskets){
         if(!bk.type) pCtx.fillStyle='#444';
         else if(bk.type==='Mango') pCtx.fillStyle='#ffaa00';
@@ -905,6 +983,7 @@
         pCtx.fillText(label, bk.x+ bk.w/2, bk.y+ bk.h/2);
       }
  
+      // Draw the balls
       pCtx.fillStyle='#0e9c65';
       for(let b of balls){
         pCtx.beginPath();
@@ -912,6 +991,7 @@
         pCtx.fill();
       }
  
+      // Drop indicator
       pCtx.strokeStyle='#0f0';
       pCtx.beginPath();
       pCtx.moveTo(dropX,0);
@@ -923,9 +1003,11 @@
       pCtx.fill();
  
       drawGarden();
+ 
+      // Show how many seeds remain (instead of old ballCount)
       pCtx.fillStyle='#000';
       pCtx.font="16px 'Sour Gummy', sans-serif";
-      pCtx.fillText(`Seeds: ${ballCount}`, 10, 20);
+      pCtx.fillText(`Seeds left: ${seeds}`, 10, 20);
     }
  
     function drawGarden(){
@@ -938,9 +1020,10 @@
         Lichi:{ xStart:20, yCenter: pachinkoFieldHeight+90, color:'#ff66aa'}
       };
  
-      Object.keys(seeds).forEach(fruit=>{
+      Object.keys(basketProgress).forEach(fruit=>{
         let lane= lanes[fruit];
-        let seedCount= seeds[fruit];
+        let seedCount= basketProgress[fruit];
+        // If the fruit is fully grown
         if(gardenFruits[fruit]){
           pCtx.beginPath();
           pCtx.arc(pWidth-40, lane.yCenter,20,0,2*Math.PI);
@@ -952,6 +1035,7 @@
           pCtx.textBaseline='middle';
           pCtx.fillText(fruit, pWidth-40, lane.yCenter);
         } else {
+          // Just draw seeds collected so far
           let radius=6;
           let spacing=20;
           for(let i=0; i< seedCount; i++){
@@ -970,9 +1054,10 @@
       });
     }
  
+    // Use seeds (currency) to drop pachinko balls
     pachinkoCanvas.addEventListener('click', ()=>{
-      if(ballCount>0){
-        ballCount--;
+      if(seeds>0){
+        seeds--;
         balls.push({
           x: dropX,
           y: 30,
@@ -984,4 +1069,3 @@
   </script>
 </body>
 </html>
- 
