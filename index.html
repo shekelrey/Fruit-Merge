@@ -233,50 +233,50 @@
     var fruitHierarchy = {
       'Strawberry': {
         levels: [
-          { color: '#c08459', radius: 17, texture: 'strawberry_open1.png' },
-          { color: '#a66a3f', radius: 20, texture: 'strawberry_open1.png' },
-          { color: '#8e5b36', radius: 25, texture: 'strawberry_open1.png' },
-          { color: '#6f472a', radius: 30, texture: 'strawberry_open1.png' }
+          { color: '#c08459', radius: 25, texture: 'strawberry_open1.png' },
+          { color: '#a66a3f', radius: 30, texture: 'strawberry_open1.png' },
+          { color: '#8e5b36', radius: 40, texture: 'strawberry_open1.png' },
+          { color: '#6f472a', radius: 50 , texture: 'strawberry_open1.png' }
         ]
       },
       'Kiwi': {
         levels: [
-          { color: '#c08459', radius: 17, texture: 'kiwi_open1.png' },
-          { color: '#a66a3f', radius: 20, texture: 'kiwi_open1.png' },
-          { color: '#8e5b36', radius: 25, texture: 'kiwi_open1.png' },
-          { color: '#6f472a', radius: 30, texture: 'kiwi_open1.png' }
+          { color: '#c08459', radius: 25, texture: 'kiwi_open1.png' },
+          { color: '#a66a3f', radius: 30, texture: 'kiwi_open1.png' },
+          { color: '#8e5b36', radius: 40, texture: 'kiwi_open1.png' },
+          { color: '#6f472a', radius: 50, texture: 'kiwi_open1.png' }
         ]
       },
       'Blueberry': {
         levels: [
-          { color: '#c08459', radius: 17, texture: 'blueberry_open1.png' },
-          { color: '#a66a3f', radius: 20, texture: 'blueberry_open1.png' },
-          { color: '#8e5b36', radius: 25, texture: 'blueberry_open1.png' },
-          { color: '#6f472a', radius: 30, texture: 'blueberry_open1.png' }
+          { color: '#c08459', radius: 25, texture: 'blueberry_open1.png' },
+          { color: '#a66a3f', radius: 30, texture: 'blueberry_open1.png' },
+          { color: '#8e5b36', radius: 40, texture: 'blueberry_open1.png' },
+          { color: '#6f472a', radius: 50, texture: 'blueberry_open1.png' }
         ]
       },  
       'Watermelon': {
         levels: [
-          { color: '#c08459', radius: 17, texture: 'watermelon_open1.png' },
-          { color: '#a66a3f', radius: 20, texture: 'watermelon_open1.png' },
-          { color: '#8e5b36', radius: 25, texture: 'watermelon_open1.png' },
-          { color: '#6f472a', radius: 30, texture: 'watermelon_open1.png' }
+          { color: '#c08459', radius: 25, texture: 'watermelon_open1.png' },
+          { color: '#a66a3f', radius: 30, texture: 'watermelon_open1.png' },
+          { color: '#8e5b36', radius: 40, texture: 'watermelon_open1.png' },
+          { color: '#6f472a', radius: 50, texture: 'watermelon_open1.png' }
         ]
       },
       'Peach': {
         levels: [
-          { color: '#c08459', radius: 17, texture: 'peach_open2.png' },
-          { color: '#a66a3f', radius: 20, texture: 'peach_open2.png' },
-          { color: '#8e5b36', radius: 25, texture: 'peach_open2.png' },
-          { color: '#6f472a', radius: 30, texture: 'peach_open2.png' }
+          { color: '#c08459', radius: 25, texture: 'peach_open2.png' },
+          { color: '#a66a3f', radius: 30, texture: 'peach_open2.png' },
+          { color: '#8e5b36', radius: 40, texture: 'peach_open2.png' },
+          { color: '#6f472a', radius: 50, texture: 'peach_open2.png' }
         ]
       },
       'Banana': {
         levels: [
-          { color: '#c08459', radius: 17, texture: 'banana_open1.png' },
-          { color: '#a66a3f', radius: 20, texture: 'banana_open1.png' },
-          { color: '#8e5b36', radius: 25, texture: 'banana_open1.png' },
-          { color: '#6f472a', radius: 30, texture: 'banana_open1.png' }
+          { color: '#c08459', radius: 25, texture: 'banana_open1.png' },
+          { color: '#a66a3f', radius: 30, texture: 'banana_open1.png' },
+          { color: '#8e5b36', radius: 40, texture: 'banana_open1.png' },
+          { color: '#6f472a', radius: 50, texture: 'banana_open1.png' }
         ]
       }
     };
@@ -375,11 +375,16 @@
     }
  
     // -------------- CREATE FRUIT (key function) --------------
+
+    // 1) Tweak engine iterations
+engine.positionIterations = 10;
+engine.velocityIterations = 6;
+
     function createFruit(x, y, fruitType, level) {
   let type = fruitHierarchy[fruitType];
   let lvlData = type.levels[level];
-
-  let fruit = Bodies.circle(x, y, lvlData.radius, {
+  let collisionRadius = lvlData.radius * 0.8; // slight inflate for snug collisions
+  let fruit = Bodies.circle(x, y, collisionRadius, {
     restitution: 0.5,
     label: fruitType,
     render: {
@@ -406,14 +411,19 @@
 
   return fruit;
 } 
-    function dropFruit(){
-      let curr= currentFruit();
-      let fruit= createFruit(guideLine.x,200,curr.type,curr.level);
-      Composite.add(world,fruit);
-      analyzeCup();
-      upcomingFruits.shift();
-      upcomingFruits.push( getRandomFruitEntry() );
-    }
+function dropFruit() {
+  let curr = currentFruit();
+  let fruit = createFruit(guideLine.x, 200, curr.type, curr.level);
+
+  // Give it a slight random spin & horizontal velocity
+  Matter.Body.setAngularVelocity(fruit, (Math.random() - 0.5) * 0.2);
+  Matter.Body.setVelocity(fruit, { x: (Math.random() - 0.5) * 0.5, y: 0 });
+
+  Composite.add(world, fruit);
+  analyzeCup();
+  upcomingFruits.shift();
+  upcomingFruits.push(getRandomFruitEntry());
+}
  
     var upcomingFruits = [
       getRandomFruitEntry(),
@@ -558,6 +568,12 @@
   if (document.getElementById('popupOverlay')) return;
   gamePaused = true;
   coins += 10;
+  
+    // Log the event to Firebase Analytics
+    firebase.analytics().logEvent('level_complete', {
+    level_number: level,
+    coins_earned: 10
+  });
 
   var overlay = document.createElement('div');
   overlay.id = 'popupOverlay';
