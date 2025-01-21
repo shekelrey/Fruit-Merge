@@ -8,6 +8,8 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Sour+Gummy&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Honk&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+
  
   <!-- Matter.js (for the main Fruit Merge game) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.min.js"></script>
@@ -74,35 +76,55 @@
       border: 2px solid rgba(255,255,255,0.2);
     }
 
-    /* Simple popup styling */
-    #popupOverlay {
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100vw; 
-      height: 100vh; 
-      background-color: rgba(0,0,0,0.5); 
-      z-index: 999;
-    }
     .popupBox {
-      position: absolute;
-      top: 50%; 
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-      border: 2px solid #333;
-      padding: 20px;
-      z-index: 1000;
-    }
-    .popupBox h2 {
-      margin-top: 0;
-      font-family: sans-serif;
-    }
-    .popupBox button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: url('Banner.png') no-repeat center center; /* Use the banner as the background */
+  background-size: contain; /* Ensure the image scales properly */
+  width: 600px; /* Adjust width to match banner */
+  height: 403px; /* Adjust height to match banner */
+  display: flex;
+  flex-direction: column ;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Fredoka One', sans-serif; /* Consistent font styling */
+  color: black; /* Text color for better readability */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+}
+
+.popupBox h2 {
+  font-size: 26px; 
+  margin: 0 0 10px;
+}
+
+.popupBox p {
+  font-size: 18px;
+  margin: 5px 0;
+}
+
+.popupBox button {
+  font-size: 18px;
+  font-family: 'Honk', sans-serif;
+  padding: 10px 20px;
+  background-color: #f0c040; /* Button background color */
+  color: black; /* Button text color */
+  border: none;
+  border-radius: 5px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.popupBox button:hover {
+  background-color: #e0b030; /* Slightly darker color on hover */
+}
+
   </style>
 </head>
  
@@ -211,54 +233,88 @@
     var fruitHierarchy = {
       'Strawberry': {
         levels: [
-          { color: '#FC8694', radius: 15 },
-          { color: '#FB576A', radius: 20 },
-          { color: '#F92740', radius: 25 },
-          { color: '#DE2339', radius: 30 }
-        ]
-      },
-      'Banana': {
-        levels: [
-          { color: '#FFF4BB', radius: 17 },
-          { color: '#FFEE8F', radius: 20 },
-          { color: '#FFE762', radius: 25 },
-          { color: '#FFE135', radius: 30 }
-        ]
-      },
-      'Blueberry': {
-        levels: [
-          { color: '#7772B9', radius: 17 },
-          { color: '#554FA2', radius: 20 },
-          { color: '#464096', radius: 25 },
-          { color: '#2E2B64', radius: 30 }
+          { color: '#c08459', radius: 17, texture: 'strawberry_open1.png' },
+          { color: '#a66a3f', radius: 20, texture: 'strawberry_open1.png' },
+          { color: '#8e5b36', radius: 25, texture: 'strawberry_open1.png' },
+          { color: '#6f472a', radius: 30, texture: 'strawberry_open1.png' }
         ]
       },
       'Kiwi': {
         levels: [
-          { color: '#c08459', radius: 17, texture: 'watermelon_Test9.png' },
-          { color: '#a66a3f', radius: 20, texture: 'watermelon_Test9.png' },
-          { color: '#8e5b36', radius: 25, texture: 'watermelon_Test9.png' },
-          { color: '#6f472a', radius: 30, texture: 'watermelon_Test9.png' }
+          { color: '#c08459', radius: 17, texture: 'kiwi_open1.png' },
+          { color: '#a66a3f', radius: 20, texture: 'kiwi_open1.png' },
+          { color: '#8e5b36', radius: 25, texture: 'kiwi_open1.png' },
+          { color: '#6f472a', radius: 30, texture: 'kiwi_open1.png' }
         ]
       },
-      'Orange': {
+      'Blueberry': {
         levels: [
-          { color: '#ffcc80', radius: 17 },
-          { color: '#ffad33', radius: 20 },
-          { color: '#ff9900', radius: 25 },
-          { color: '#ff8000', radius: 30 }
+          { color: '#c08459', radius: 17, texture: 'blueberry_open1.png' },
+          { color: '#a66a3f', radius: 20, texture: 'blueberry_open1.png' },
+          { color: '#8e5b36', radius: 25, texture: 'blueberry_open1.png' },
+          { color: '#6f472a', radius: 30, texture: 'blueberry_open1.png' }
+        ]
+      },  
+      'Watermelon': {
+        levels: [
+          { color: '#c08459', radius: 17, texture: 'watermelon_open1.png' },
+          { color: '#a66a3f', radius: 20, texture: 'watermelon_open1.png' },
+          { color: '#8e5b36', radius: 25, texture: 'watermelon_open1.png' },
+          { color: '#6f472a', radius: 30, texture: 'watermelon_open1.png' }
         ]
       },
-      'Grape': {
+      'Peach': {
         levels: [
-          { color: '#B677AB', radius: 17 },
-          { color: '#924685', radius: 20 },
-          { color: '#6D2161', radius: 25 },
-          { color: '#5B144F', radius: 30 }  
+          { color: '#c08459', radius: 17, texture: 'peach_open2.png' },
+          { color: '#a66a3f', radius: 20, texture: 'peach_open2.png' },
+          { color: '#8e5b36', radius: 25, texture: 'peach_open2.png' },
+          { color: '#6f472a', radius: 30, texture: 'peach_open2.png' }
+        ]
+      },
+      'Banana': {
+        levels: [
+          { color: '#c08459', radius: 17, texture: 'banana_open1.png' },
+          { color: '#a66a3f', radius: 20, texture: 'banana_open1.png' },
+          { color: '#8e5b36', radius: 25, texture: 'banana_open1.png' },
+          { color: '#6f472a', radius: 30, texture: 'banana_open1.png' }
         ]
       }
     };
     var allFruits = Object.keys(fruitHierarchy);
+
+        const textures = {};
+    allFruits.forEach(fruit => {
+        if (fruitHierarchy[fruit].levels[0].texture) {
+            const img = new Image();
+            img.src = fruitHierarchy[fruit].levels[0].texture;
+            textures[fruit] = img;
+            textures["Watermelon_Open"] = new Image();
+            textures["Watermelon_Open"].src = "watermelon_open1.png";
+            textures["Watermelon_Closed"] = new Image();
+            textures["Watermelon_Closed"].src = "watermelon_closed1.png";
+            textures["Peach_Open"] = new Image();
+            textures["Peach_Open"].src = "peach_open2.png";
+            textures["Peach_Closed"] = new Image(); 
+            textures["Peach_Closed"].src = "peach_closed2.png";
+            textures["Banana_Open"] = new Image();
+            textures["Banana_Open"].src = "banana_open1.png";
+            textures["Banana_Closed"] = new Image(); 
+            textures["Banana_Closed"].src = "banana_closed1.png";
+            textures["Blueberry_Open"] = new Image();
+            textures["Blueberry_Open"].src = "blueberry_open1.png";
+            textures["Blueberry_Closed"] = new Image(); 
+            textures["Blueberry_Closed"].src = "blueberry_closed1.png";
+            textures["Kiwi_Open"] = new Image();
+            textures["Kiwi_Open"].src = "kiwi_open1.png";
+            textures["Kiwi_Closed"] = new Image(); 
+            textures["Kiwi_Closed"].src = "kiwi_closed1.png";
+            textures["Strawberry_Open"] = new Image();
+            textures["Strawberry_Open"].src = "strawberry_open1.png";
+            textures["Strawberry_Closed"] = new Image(); 
+            textures["Strawberry_Closed"].src = "strawberry_closed1.png";
+        }
+    });
+
  
     // -------------- CUSTOMERS --------------
     let levelNumber = 1;
@@ -319,32 +375,37 @@
     }
  
     // -------------- CREATE FRUIT (key function) --------------
-    function createFruit(x,y,fruitType,level){
-      let type=fruitHierarchy[fruitType];
-      let lvlData= type.levels[level];
- 
-      // If texture is specified, use sprite; otherwise fillStyle
-      let fruit = Bodies.circle(x, y, lvlData.radius, {
-        restitution: 0.5,
-        label: fruitType,
-        render: lvlData.texture
-          ? {
-              sprite: {
-                texture: lvlData.texture,
-                xScale: (lvlData.radius * 2) / 100,
-                yScale: (lvlData.radius * 2) / 100
-              }
-            }
-          : {
-              fillStyle: lvlData.color
-            }
-      });
-      fruit.fruitType= fruitType;
-      fruit.fruitLevel= level;
-      fruit.hierarchyText= (level+1);
-      return fruit;
+    function createFruit(x, y, fruitType, level) {
+  let type = fruitHierarchy[fruitType];
+  let lvlData = type.levels[level];
+
+  let fruit = Bodies.circle(x, y, lvlData.radius, {
+    restitution: 0.5,
+    label: fruitType,
+    render: {
+      visible: false
     }
- 
+  });
+
+  fruit.fruitType = fruitType;
+  fruit.fruitLevel = level;
+  fruit.hierarchyText = (level + 1);
+
+  // If this fruit has both an "Open" and "Closed" texture loaded, let's treat it as "blinking."
+  let hasOpenTex = textures[fruitType + "_Open"];
+  let hasClosedTex = textures[fruitType + "_Closed"];
+  if (hasOpenTex && hasClosedTex) {
+    // Assign a per-body blinkData
+    fruit.blinkData = {
+      state: "Open",         // start as Open
+      timer: 0,              // tick counter
+      threshold: 80 + Math.floor(Math.random() * 60) 
+         // any random timing you like, so each fruit blinks out of sync
+    };
+  }
+
+  return fruit;
+} 
     function dropFruit(){
       let curr= currentFruit();
       let fruit= createFruit(guideLine.x,200,curr.type,curr.level);
@@ -368,7 +429,7 @@
         type: allFruits[Math.floor(Math.random()*allFruits.length)],
         level: 0
       };
-    }
+    } 
  
     function analyzeCup(){
       Composite.allBodies(world).forEach((body)=>{
@@ -392,29 +453,32 @@
     }
  
     function showLossPopup() {
-      if (document.getElementById('popupOverlay')) return;
- 
-      var overlay = document.createElement('div');
-      overlay.id = 'popupOverlay';
-      document.body.appendChild(overlay);
- 
-      var popup = document.createElement('div');
-      popup.className = 'popupBox';
-      popup.innerHTML = `
-          <h2>You Lost!</h2>
-          <p>A fruit fell out of the cup.</p>
-          <button id="restartLevelBtn">Restart Level</button>
-      `;
-      overlay.appendChild(popup);
- 
-      var restartLevelButton = document.getElementById('restartLevelBtn');
-      if (restartLevelButton) {
-          restartLevelButton.addEventListener('click', function () {
-              if (overlay) document.body.removeChild(overlay);
-              resetLevel();
-          });
-      }
-    }
+  if (document.getElementById('popupOverlay')) return;
+
+  var overlay = document.createElement('div');
+  overlay.id = 'popupOverlay';
+  document.body.appendChild(overlay);
+
+  var popup = document.createElement('div');
+  popup.className = 'popupBox';
+  popup.innerHTML = `
+    <h2>You Lost!</h2>
+    </p></p></p></p></p></p></p></p></p></p></p></p></p>
+    <p>A fruit fell out of the cup.</p>
+    <button id="restartLevelBtn">Restart Level</button>
+  `;
+
+
+  overlay.appendChild(popup);
+
+  var restartLevelButton = document.getElementById('restartLevelBtn');
+  if (restartLevelButton) {
+    restartLevelButton.addEventListener('click', function () {
+      if (overlay) document.body.removeChild(overlay);
+      resetLevel();
+    });
+  }
+}
  
     function resetLevel() {
       console.log(`Restarting level ${level}...`);
@@ -489,39 +553,55 @@
       }
     }
  
+
     function showPopupAndProceed() {
-      if (document.getElementById('popupOverlay')) return;
-      gamePaused = true;
-      coins += 10;
- 
-      var overlay = document.createElement('div');
-      overlay.id = 'popupOverlay';
-      document.body.appendChild(overlay);
- 
-      var popup = document.createElement('div');
-      popup.className = 'popupBox';
-      popup.innerHTML = `
-          <h2>Level Complete!</h2>
-          <p>You have earned 10 coins!</p>
-          <p>Total Coins: ${coins}</p>
-          <button id="nextLevelBtn">Next Level</button>
-      `;
-      overlay.appendChild(popup);
- 
-      var nextLevelButton = document.getElementById('nextLevelBtn');
-      if (nextLevelButton) {
-          nextLevelButton.addEventListener('click', function (event) {
-              event.preventDefault();
-              event.stopPropagation();
- 
-              document.body.removeChild(overlay);
- 
-              gamePaused = false;
-              level++;
-              resetCustomers();
-          });
-      }
-    }
+  if (document.getElementById('popupOverlay')) return;
+  gamePaused = true;
+  coins += 10;
+
+  var overlay = document.createElement('div');
+  overlay.id = 'popupOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  `;
+  document.body.appendChild(overlay);
+
+  var popup = document.createElement('div');
+  popup.className = 'popupBox';
+  popup.innerHTML = `
+    <h2>Level Complete!</h2>
+    </p>
+    </p>
+    </p>
+    </p>
+    </p>
+    </p>
+    </p>
+    </p> </p></p></p></p></p>
+    <p>You have earned 10 coins!</p>
+    <p>Total Coins: ${coins}</p>
+    <button id="nextLevelBtn">Next Level</button>
+  `;
+  overlay.appendChild(popup);
+
+  var nextLevelButton = document.getElementById('nextLevelBtn');
+  if (nextLevelButton) {
+    nextLevelButton.addEventListener('click', function () {
+      document.body.removeChild(overlay);
+      gamePaused = false;
+      level++;
+      resetCustomers();
+    });
+  }
+}
+
+
  
     // Key controls
     var moveLeft=false, moveRight=false, moveSpeed=5;
@@ -547,6 +627,7 @@
  
     // ------------------- Canvas render loop -------------------
     (function renderLoop(){
+      updateBlinkStates();
       if(moveLeft && guideLine.x> cupCenterX - (cupWidthTop/2)+20) guideLine.x-= moveSpeed;
       if(moveRight && guideLine.x< cupCenterX + (cupWidthTop/2)-20) guideLine.x+= moveSpeed;
  
@@ -567,120 +648,204 @@
       requestAnimationFrame(renderLoop);
     })();
  
-    function drawGuideLine(ctx){
-      ctx.beginPath();
-      ctx.moveTo(guideLine.x,240);
-      ctx.lineTo(guideLine.x,400);
-      ctx.strokeStyle="black";
-      ctx.lineWidth=1;
-      ctx.setLineDash([5,5]);
-      ctx.stroke();
-      ctx.setLineDash([]);
- 
-      let curr= currentFruit();
-      let type= fruitHierarchy[curr.type];
-      let lvlData= type.levels[curr.level];
- 
-      // The "preview" circle
-      ctx.beginPath();
-      ctx.arc(guideLine.x,200,lvlData.radius,0,2*Math.PI);
-      ctx.fillStyle= lvlData.color;
-      ctx.fill();
-      ctx.strokeStyle= "black";
-      ctx.stroke();
- 
-      const textColor= getContrastColor(lvlData.color);
-      ctx.font= "16px 'Sour Gummy', sans-serif";
-      ctx.fillStyle= textColor;
-      ctx.textAlign="center";
-      ctx.textBaseline="middle";
-      ctx.fillText((curr.level+1), guideLine.x, 200);
- 
-      ctx.fillStyle="black";
-      ctx.font= "18px 'Sour Gummy', sans-serif";
-      ctx.fillText(curr.type, guideLine.x,230);
-    }
- 
-    function drawUpcomingFruits(ctx){
-      let startX=60;
-      let startY=350;
-      let verticalSpacing=70;
- 
-      ctx.font="20px 'Sour Gummy', sans-serif";
-      ctx.fillStyle="black";
-      ctx.fillText("Upcoming:",startX+10,startY-50);
- 
-      for(let i=1; i<upcomingFruits.length;i++){
-        let fruitData= upcomingFruits[i];
-        let type= fruitHierarchy[fruitData.type];
-        let lvlData= type.levels[fruitData.level];
-        let yPos= startY+ (i-1)*verticalSpacing;
- 
+    function drawGuideLine(ctx) {
+    // Draw the guide line
+    ctx.beginPath();
+    ctx.moveTo(guideLine.x, 240);
+    ctx.lineTo(guideLine.x, 400);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Get the current fruit data
+    let curr = currentFruit();
+    let type = fruitHierarchy[curr.type];
+    let lvlData = type.levels[curr.level];
+
+    // Check if the fruit has a texture
+    if (lvlData.texture && textures[curr.type]) {
+        // Draw the texture if available and loaded
+        if (textures[curr.type].complete) {
+            ctx.drawImage(
+                textures[curr.type],
+                guideLine.x - lvlData.radius,
+                200 - lvlData.radius,
+                lvlData.radius * 2,
+                lvlData.radius * 2
+            );
+        }
+    } else {
+        // Draw a simple circle if no texture is available
         ctx.beginPath();
-        ctx.arc(startX,yPos,lvlData.radius,0,2*Math.PI);
-        ctx.fillStyle= lvlData.color;
+        ctx.arc(guideLine.x, 200, lvlData.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = lvlData.color;
         ctx.fill();
-        ctx.strokeStyle="black";
+        ctx.strokeStyle = "black";
         ctx.stroke();
- 
-        const textColor= getContrastColor(lvlData.color);
-        ctx.font="16px 'Sour Gummy', sans-serif";
-        ctx.fillStyle= textColor;
-        ctx.textAlign="center";
-        ctx.textBaseline="middle";
-        ctx.fillText((fruitData.level+1), startX, yPos);
-      }
     }
+
+    // Draw the fruit level text
+    const textColor = getContrastColor(lvlData.color);
+    ctx.font = "16px 'Sour Gummy', sans-serif";
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText((curr.level + 1), guideLine.x, 200);
+
+    // Draw the fruit type text
+    ctx.fillStyle = "black";
+    ctx.font = "18px 'Sour Gummy', sans-serif";
+    ctx.fillText(curr.type, guideLine.x, 230);
+}
  
-    function drawCustomers(ctx){
-      let startX=250;
-      let startY= cupCenterY + cupHeight/2 -520;
-      let horizontalSpacing=300;
- 
-      ctx.font="20px 'Sour Gummy', sans-serif";
-      ctx.fillStyle="black";
-      ctx.fillText("Customer Requests:", startX+30, startY-30);
- 
-      customers.forEach((customer,index)=>{
-        let xPos= startX+ index*horizontalSpacing;
-        let yPos= startY;
-        ctx.fillStyle= customer.fulfilled? "green":"black";
-        ctx.fillText(`Customer ${customer.id}`, xPos+30, yPos);
- 
-        let centerX=xPos;
-        let centerY=yPos+40;
-        let radius=30;
-        let angleStep= (2*Math.PI)/ customer.requests.length;
- 
-        customer.requests.forEach((request, reqIndex)=>{
-          let type= fruitHierarchy[request.fruit];
-          let lvlData= type.levels[request.level];
-          let fruitX= centerX + radius*Math.cos(reqIndex * angleStep);
-          let fruitY= centerY + radius*Math.sin(reqIndex * angleStep);
- 
-          let inCup= Composite.allBodies(world).some(
-            (body)=> body.fruitType=== request.fruit && body.fruitLevel=== request.level
-          );
-          ctx.beginPath();
-          ctx.arc(fruitX,fruitY,lvlData.radius,0,2*Math.PI);
-          ctx.fillStyle= customer.fulfilled ? "grey": lvlData.color;
-          ctx.fill();
-          ctx.strokeStyle= (inCup && !customer.fulfilled)? "green":"black";
-          ctx.lineWidth= (inCup && !customer.fulfilled)? 3:1;
-          ctx.stroke();
- 
-          const textColor= getContrastColor(lvlData.color);
-          const effectiveColor= customer.fulfilled ? "#aaaaaa": lvlData.color;
-          const txtFillColor= getContrastColor(effectiveColor);
-          ctx.font="16px 'Sour Gummy', sans-serif";
-          ctx.fillStyle= txtFillColor;
-          ctx.textAlign="center";
-          ctx.textBaseline="middle";
-          ctx.fillText((request.level+1),fruitX,fruitY);
+    function drawUpcomingFruits(ctx) {
+    let startX = 60;
+    let startY = 350;
+    let verticalSpacing = 70;
+
+    // Title
+    ctx.font = "20px 'Fredoka One', sans-serif";
+    ctx.fillStyle = "black";
+    ctx.fillText("Upcoming:", startX + 10, startY - 50);
+
+    for (let i = 1; i < upcomingFruits.length; i++) {
+        let fruitData = upcomingFruits[i];
+        let type = fruitHierarchy[fruitData.type];
+        let lvlData = type.levels[fruitData.level];
+        let yPos = startY + (i - 1) * verticalSpacing;
+
+        // If a texture is defined and preloaded, draw it
+        if (lvlData.texture && textures[fruitData.type]) {
+            // OPTIONAL: Check if the image is fully loaded
+            if (textures[fruitData.type].complete) {
+                ctx.drawImage(
+                    textures[fruitData.type],
+                    startX - lvlData.radius,
+                    yPos - lvlData.radius,
+                    lvlData.radius * 2,
+                    lvlData.radius * 2
+                );
+
+                // Draw fruit-level text on top (optional)
+                const textColor = getContrastColor(lvlData.color);
+                ctx.font = "16px 'Sour Gummy', sans-serif";
+                ctx.fillStyle = textColor;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText((fruitData.level + 1), startX, yPos);
+            } 
+            // else { // If not complete, optionally do a fallback
+            //     // e.g., draw a placeholder circle or do nothing
+            // }
+        } else {
+            // Draw a simple colored circle if no texture or not loaded
+            ctx.beginPath();
+            ctx.arc(startX, yPos, lvlData.radius, 0, 2 * Math.PI);
+            ctx.fillStyle = lvlData.color;
+            ctx.fill();
+            ctx.strokeStyle = "black";
+            ctx.stroke();
+
+            const textColor = getContrastColor(lvlData.color);
+            ctx.font = "16px 'Sour Gummy', sans-serif";
+            ctx.fillStyle = textColor;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText((fruitData.level + 1), startX, yPos);
+        }
+    }
+}
+
+function drawCustomers(ctx) {
+    let startX = 250;
+    let startY = cupCenterY + cupHeight / 2 - 520;
+    let horizontalSpacing = 300;
+
+    // Title
+    ctx.font = "20px 'Fredoka One', sans-serif";
+    ctx.fillStyle = "black";
+    ctx.fillText("Customer Orders:", startX + 30, startY - 30);
+
+    customers.forEach((customer, index) => {
+        let xPos = startX + index * horizontalSpacing;
+        let yPos = startY;
+        ctx.fillStyle = customer.fulfilled ? "green" : "black";
+        ctx.fillText(`Customer ${customer.id}`, xPos + 30, yPos);
+
+        let centerX = xPos;
+        let centerY = yPos + 40;
+        let radius = 30;
+        let angleStep = (2 * Math.PI) / customer.requests.length;
+
+        customer.requests.forEach((request, reqIndex) => {
+            let type = fruitHierarchy[request.fruit];
+            let lvlData = type.levels[request.level];
+            let fruitX = centerX + radius * Math.cos(reqIndex * angleStep);
+            let fruitY = centerY + radius * Math.sin(reqIndex * angleStep);
+
+            let inCup = Composite.allBodies(world).some(
+                (body) => body.fruitType === request.fruit && body.fruitLevel === request.level
+            );
+
+            // If a texture exists and is loaded, draw it
+            if (lvlData.texture && textures[request.fruit] && textures[request.fruit].complete) {
+                ctx.drawImage(
+                    textures[request.fruit],
+                    fruitX - lvlData.radius,
+                    fruitY - lvlData.radius,
+                    lvlData.radius * 2,
+                    lvlData.radius * 2
+                );
+
+                // Highlight fulfilled requests with a border
+                if (inCup && !customer.fulfilled) {
+                    ctx.beginPath();
+                    ctx.arc(fruitX, fruitY, lvlData.radius + 3, 0, 2 * Math.PI);
+                    ctx.strokeStyle = "green";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            } else {
+                // Fallback: Draw a simple colored circle if no texture exists
+                ctx.beginPath();
+                ctx.arc(fruitX, fruitY, lvlData.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = customer.fulfilled ? "grey" : lvlData.color;
+                ctx.fill();
+                ctx.strokeStyle = inCup && !customer.fulfilled ? "green" : "black";
+                ctx.lineWidth = inCup && !customer.fulfilled ? 3 : 1;
+                ctx.stroke();
+            }
+
+            // Draw fruit-level text on top
+            const textColor = getContrastColor(lvlData.color);
+            const effectiveColor = customer.fulfilled ? "#aaaaaa" : lvlData.color;
+            const txtFillColor = getContrastColor(effectiveColor);
+            ctx.font = "16px 'Sour Gummy', sans-serif";
+            ctx.fillStyle = txtFillColor;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(request.level + 1, fruitX, fruitY);
         });
-      });
+    });
+}
+
+function updateBlinkStates() {
+  Composite.allBodies(world).forEach(body => {
+    // Skip bodies that have no blink data
+    if (!body.blinkData) return;
+
+    // Increment that body's timer
+    body.blinkData.timer++;
+
+    // When it exceeds threshold, flip the state
+    if (body.blinkData.timer >= body.blinkData.threshold) {
+      body.blinkData.state = (body.blinkData.state === "Open") ? "Closed" : "Open";
+      body.blinkData.timer = 0;
     }
- 
+  });
+}
     function drawCurrentLevel(ctx){
       ctx.font="40px 'Honk', sans-serif";
       ctx.fillStyle="black";
@@ -727,11 +892,12 @@
       popup.className = 'popupBox';
       popup.innerHTML = `
         <h2>Buy Seeds</h2>
+        </p>
         <p>Each seed costs 10 coins. You have ${coins} coins.</p>
         <p>Max seeds you can afford: ${Math.floor(coins/10)}</p>
         <input type="range" id="seedRange" min="0" max="${Math.floor(coins/10)}" value="0" />
         <span id="seedRangeValue">0</span>
-        <br/>
+      
         <button id="purchaseSeedsBtn">Purchase</button>
         <button id="closePopupBtn">Cancel</button>
       `;
@@ -763,32 +929,75 @@
       });
     }
  
-    function drawFruitsWithText(ctx){
-      Composite.allBodies(world).forEach(body=>{
-        if(body.fruitType){
-          let posX= body.position.x;
-          let posY= body.position.y;
-          let radius= fruitHierarchy[body.fruitType].levels[body.fruitLevel].radius;
-          let bgColor= fruitHierarchy[body.fruitType].levels[body.fruitLevel].color;
- 
-          if(body.highlight){
-            ctx.beginPath();
-            ctx.arc(posX, posY, radius+3, 0,2*Math.PI);
-            ctx.strokeStyle="green";
-            ctx.lineWidth=2;
-            ctx.stroke();
-          }
-          // Draw the fruit-level text over the sprite
-          const textColor= getContrastColor(bgColor);
-          ctx.font="16px 'Sour Gummy', sans-serif";
-          ctx.fillStyle= textColor;
-          ctx.textAlign="center";
-          ctx.textBaseline="middle";
-          ctx.fillText(body.hierarchyText, posX,posY);
+    function drawFruitsWithText(ctx) {
+  Composite.allBodies(world).forEach(body => {
+    if (body.fruitType) {
+      const posX = body.position.x;
+      const posY = body.position.y;
+      const angle = body.angle;
+      const radius = fruitHierarchy[body.fruitType].levels[body.fruitLevel].radius;
+      const bgColor = fruitHierarchy[body.fruitType].levels[body.fruitLevel].color;
+
+      // Highlight ring
+      if (body.highlight) {
+        ctx.beginPath();
+        ctx.arc(posX, posY, radius + 3, 0, 2 * Math.PI);
+        ctx.strokeStyle = "green";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Canvas transform to rotate with physics
+      ctx.save();
+      ctx.translate(posX, posY);
+      ctx.rotate(angle);
+
+      if (body.blinkData) {
+        // If this body is blinking
+        const blinkState = body.blinkData.state; // "Open" or "Closed"
+        const texKey = body.fruitType + "_" + blinkState;
+        const texture = textures[texKey];
+
+        if (texture && texture.complete) {
+          ctx.drawImage(texture, -radius, -radius, radius * 2, radius * 2);
+        } else {
+          // fallback circle
+          ctx.beginPath();
+          ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+          ctx.fillStyle = bgColor;
+          ctx.fill();
+          ctx.strokeStyle = "black";
+          ctx.stroke();
         }
-      });
+
+      } else {
+        // Non-blinking or fruit with no blinkData
+        let defaultTexture = fruitHierarchy[body.fruitType].levels[body.fruitLevel].texture;
+        if (defaultTexture && textures[body.fruitType] && textures[body.fruitType].complete) {
+          ctx.drawImage(textures[body.fruitType], -radius, -radius, radius * 2, radius * 2);
+        } else {
+          // Fallback circle
+          ctx.beginPath();
+          ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+          ctx.fillStyle = bgColor;
+          ctx.fill();
+          ctx.strokeStyle = "black";
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore(); // reset transforms
+
+      // Fruit-level text (non-rotated)
+      const textColor = getContrastColor(bgColor);
+      ctx.font = "16px 'Sour Gummy', sans-serif";
+      ctx.fillStyle = textColor;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(body.hierarchyText, posX, posY);
     }
- 
+  });
+}
     function getContrastColor(hexColor){
       // handle short color or no '#'
       if(hexColor[0] === '#') hexColor = hexColor.slice(1);
