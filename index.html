@@ -34,7 +34,7 @@
       left: 0;
       width: 1300px;
       height: 731px;
-      background-image: url('background8 (2).jpg');
+      background-image: url('https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/background8%20(2).jpg');;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -81,7 +81,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: url('Banner.png') no-repeat center center; /* Use the banner as the background */
+  background: url('https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/Banner.png') no-repeat center center; /* Use the banner as the background */
   background-size: contain; /* Ensure the image scales properly */
   width: 600px; /* Adjust width to match banner */
   height: 403px; /* Adjust height to match banner */
@@ -129,6 +129,11 @@
 </head>
  
 <body>
+
+  <div id="loading-screen" style="position: fixed; width: 100%; height: 100%; background: black; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 9999;">
+    Loading...
+  </div>
+
   <div id="background-layer"></div>
   <div id="game-container"></div>
  
@@ -138,6 +143,73 @@
   </div>
  
   <script>
+
+  // Preloader Function
+  function preloadAssets(assetUrls, onComplete) {
+    let loadedCount = 0;
+    const totalAssets = assetUrls.length;
+    const loadedAssets = {};
+
+    assetUrls.forEach((url) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        loadedCount++;
+        loadedAssets[url] = img;
+        if (loadedCount === totalAssets) {
+          onComplete(loadedAssets);
+        }
+      };
+      img.onerror = () => {
+        console.error(`Failed to load asset: ${url}`);
+      };
+    });
+  }
+
+  function initializeGame(loadedAssets) {
+    document.getElementById('loading-screen').style.display = 'none';
+    allFruits.forEach((fruit) => {
+      if (fruitHierarchy[fruit].levels[0].texture) {
+        textures[fruit] = loadedAssets[fruitHierarchy[fruit].levels[0].texture];
+      }
+    });
+
+    textures["Watermelon_Open"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png'];
+    textures["Watermelon_Closed"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_closed1.png'];
+    textures["Peach_Open"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_open2.png'];
+    textures["Peach_Closed"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_closed2.png'];
+    textures["Banana_Open"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png'];
+    textures["Banana_Closed"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_closed1.png'];
+    textures["Blueberry_Open"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png'];
+    textures["Blueberry_Closed"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_closed1.png'];
+    textures["Kiwi_Open"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_open1.png'];
+    textures["Kiwi_Closed"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_closed1.png'];
+    textures["Strawberry_Open"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png'];
+    textures["Strawberry_Closed"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_closed1.png'];
+
+    // Start the game loop or initialization
+    startGame();
+  }
+
+
+  // Collect Asset URLs
+  const assetUrls = [
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_open1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_open2.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_closed1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_closed2.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_closed1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_closed1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_closed1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_closed1.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/background8%20(2).jpg',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/Banner.png'
+  ];
+
     /**************************************************************
      * 1) Firebase Initialization
      **************************************************************/
@@ -170,6 +242,24 @@
         Bodies = Matter.Bodies,
         Events = Matter.Events;
  
+
+  // Preload Assets
+  preloadAssets(assetUrls, (loadedAssets) => {
+    console.log('All assets loaded successfully!');
+    initializeGame(loadedAssets);
+  });
+
+  // Define the game engine and render settings
+  var Engine = Matter.Engine,
+      Render = Matter.Render,
+      Runner = Matter.Runner,
+      Composite = Matter.Composite,
+      Bodies = Matter.Bodies,
+      Events = Matter.Events;
+
+  var engine = Engine.create(),
+      world = engine.world;
+
     var engine = Engine.create(),
         world = engine.world;
  
@@ -240,50 +330,50 @@
     var fruitHierarchy = {
       'Strawberry': {
         levels: [
-          { color: '#c08459', radius: 25, texture: 'strawberry_open1.png' },
-          { color: '#a66a3f', radius: 35, texture: 'strawberry_open1.png' },
-          { color: '#8e5b36', radius: 45, texture: 'strawberry_open1.png' },
-          { color: '#6f472a', radius: 55 , texture: 'strawberry_open1.png' }
+          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
+          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
+          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
+          { color: '#6f472a', radius: 60 , texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' }
         ]
       },
       'Kiwi': {
         levels: [
-          { color: '#c08459', radius: 25, texture: 'kiwi_open1.png' },
-          { color: '#a66a3f', radius: 30, texture: 'kiwi_open1.png' },
-          { color: '#8e5b36', radius: 40, texture: 'kiwi_open1.png' },
-          { color: '#6f472a', radius: 50, texture: 'kiwi_open1.png' }
+          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_open1.png' },
+          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_open1.png' },
+          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_open1.png' },
+          { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_open1.png' }
         ]
       },
       'Blueberry': {
         levels: [
-          { color: '#c08459', radius: 25, texture: 'blueberry_open1.png' },
-          { color: '#a66a3f', radius: 30, texture: 'blueberry_open1.png' },
-          { color: '#8e5b36', radius: 40, texture: 'blueberry_open1.png' },
-          { color: '#6f472a', radius: 50, texture: 'blueberry_open1.png' }
+          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
+          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
+          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
+          { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' }
         ]
       },  
       'Watermelon': {
         levels: [
-          { color: '#c08459', radius: 25, texture: 'watermelon_open1.png' },
-          { color: '#a66a3f', radius: 30, texture: 'watermelon_open1.png' },
-          { color: '#8e5b36', radius: 40, texture: 'watermelon_open1.png' },
-          { color: '#6f472a', radius: 50, texture: 'watermelon_open1.png' }
+          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
+          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
+          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
+          { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' }
         ]
       },
       'Peach': {
         levels: [
-          { color: '#c08459', radius: 25, texture: 'peach_open2.png' },
-          { color: '#a66a3f', radius: 30, texture: 'peach_open2.png' },
-          { color: '#8e5b36', radius: 40, texture: 'peach_open2.png' },
-          { color: '#6f472a', radius: 50, texture: 'peach_open2.png' }
+          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_open2.png' },
+          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_open2.png' },
+          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_open2.png' },
+          { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_open2.png' }
         ]
       },
       'Banana': {
         levels: [
-          { color: '#c08459', radius: 25, texture: 'banana_open1.png' },
-          { color: '#a66a3f', radius: 30, texture: 'banana_open1.png' },
-          { color: '#8e5b36', radius: 40, texture: 'banana_open1.png' },
-          { color: '#6f472a', radius: 50, texture: 'banana_open1.png' }
+          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png' },
+          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png' },
+          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png' },
+          { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png' }
         ]
       }
     };
@@ -296,29 +386,29 @@
             img.src = fruitHierarchy[fruit].levels[0].texture;
             textures[fruit] = img;
             textures["Watermelon_Open"] = new Image();
-            textures["Watermelon_Open"].src = "watermelon_open1.png";
+            textures["Watermelon_Open"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png';
             textures["Watermelon_Closed"] = new Image();
-            textures["Watermelon_Closed"].src = "watermelon_closed1.png";
+            textures["Watermelon_Closed"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_closed1.png';
             textures["Peach_Open"] = new Image();
-            textures["Peach_Open"].src = "peach_open2.png";
+            textures["Peach_Open"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_open2.png';
             textures["Peach_Closed"] = new Image(); 
-            textures["Peach_Closed"].src = "peach_closed2.png";
+            textures["Peach_Closed"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/peach_closed2.png';
             textures["Banana_Open"] = new Image();
-            textures["Banana_Open"].src = "banana_open1.png";
+            textures["Banana_Open"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png';
             textures["Banana_Closed"] = new Image(); 
-            textures["Banana_Closed"].src = "banana_closed1.png";
+            textures["Banana_Closed"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_closed1.png';
             textures["Blueberry_Open"] = new Image();
-            textures["Blueberry_Open"].src = "blueberry_open1.png";
+            textures["Blueberry_Open"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png';
             textures["Blueberry_Closed"] = new Image(); 
-            textures["Blueberry_Closed"].src = "blueberry_closed1.png";
+            textures["Blueberry_Closed"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_closed1.png';
             textures["Kiwi_Open"] = new Image();
-            textures["Kiwi_Open"].src = "kiwi_open1.png";
+            textures["Kiwi_Open"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_open1.png';
             textures["Kiwi_Closed"] = new Image(); 
-            textures["Kiwi_Closed"].src = "kiwi_closed1.png";
+            textures["Kiwi_Closed"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/kiwi_closed1.png';
             textures["Strawberry_Open"] = new Image();
-            textures["Strawberry_Open"].src = "strawberry_open1.png";
+            textures["Strawberry_Open"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png';
             textures["Strawberry_Closed"] = new Image(); 
-            textures["Strawberry_Closed"].src = "strawberry_closed1.png";
+            textures["Strawberry_Closed"].src = 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_closed1.png';
         }
     });
 
@@ -971,20 +1061,20 @@ function updateBlinkStates() {
   });
 }
     function drawCurrentLevel(ctx){
-      ctx.font="40px 'Honk', sans-serif";
+      ctx.font="30px 'Fredoka One', sans-serif";
       ctx.fillStyle="black";
       ctx.fillText("Level: "+level,80,30);
     }
  
     function displayCoins(ctx){
-      ctx.font="40px 'Honk', sans-serif";
+      ctx.font="30px 'Fredoka One', sans-serif";
       ctx.fillStyle="black";
       ctx.fillText("Coins: "+ coins,82,80);
     }
 
     // (1) Draw Seeds below coins
     function displaySeeds(ctx){
-      ctx.font="40px 'Honk', sans-serif";
+      ctx.font="30px 'Fredoka One', sans-serif";
       ctx.fillStyle="black";
       // We'll draw it around y=130
       ctx.fillText("Seeds: "+ seeds, 82, 130);
