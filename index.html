@@ -34,7 +34,7 @@
       left: 0;
       width: 1300px;
       height: 731px;
-      background-image: url('background7.jpg');
+      background-image: url('background8 (2).jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -150,7 +150,14 @@
       appId: "1:581122347526:web:7d120f38a40c60a7c2e987",
       measurementId: "G-VDD7CG94Y2"
     };
+
+    
     firebase.initializeApp(firebaseConfig);
+    if (firebase.apps.length === 0) {
+  console.error("Firebase initialization failed.");
+} else {
+  console.log("Firebase initialized successfully.");
+}
     firebase.analytics();
  
     /**************************************************************
@@ -183,7 +190,7 @@
  
     // Cup setup
     var cupCenterX = 500;
-    var cupCenterY = 420;
+    var cupCenterY = 500;
     var cupWidthTop = 400;
     var cupWidthBottom = 300;
     var cupHeight = 300;
@@ -227,16 +234,16 @@
  
     Composite.add(world, [bottom, leftWall, rightWall]);
  
-    var guideLine = { x: 500, y: 200 };
+    var guideLine = { x: 500, y: 300 };
  
     // 4-level fruit hierarchy
     var fruitHierarchy = {
       'Strawberry': {
         levels: [
           { color: '#c08459', radius: 25, texture: 'strawberry_open1.png' },
-          { color: '#a66a3f', radius: 30, texture: 'strawberry_open1.png' },
-          { color: '#8e5b36', radius: 40, texture: 'strawberry_open1.png' },
-          { color: '#6f472a', radius: 50 , texture: 'strawberry_open1.png' }
+          { color: '#a66a3f', radius: 35, texture: 'strawberry_open1.png' },
+          { color: '#8e5b36', radius: 45, texture: 'strawberry_open1.png' },
+          { color: '#6f472a', radius: 55 , texture: 'strawberry_open1.png' }
         ]
       },
       'Kiwi': {
@@ -319,61 +326,98 @@
     // -------------- CUSTOMERS --------------
     let levelNumber = 1;
     let customers = generateLevel(levelNumber);
- 
-    function generateLevel(levelNumber) {
-      let minCustomers = 1;
-      let maxCustomers = Math.min(10, 1 + Math.floor(levelNumber / 5));
-      let numCustomers = getRandomInt(minCustomers, maxCustomers);
-      let customers = [];
-      for (let i=0; i<numCustomers; i++){
-        let requests = [];
-        let numRequests = getRandomInt(1, 1 + Math.floor(levelNumber/10));
-        for (let r=0; r<numRequests; r++){
-          let fruitType = allFruits[Math.floor(Math.random()*allFruits.length)];
-          let maxFruitLevelIndex = Math.min(3, Math.floor(levelNumber /5));
-          let fruitLevel = getRandomInt(1, maxFruitLevelIndex);
-          requests.push({
-            fruit: fruitType,
-            level: fruitLevel,
-            quantity: 1
-          });
-        }
-        customers.push({
-          id: i+1,
-          requests,
-          fulfilled: false
-        });
-      }
- 
-      // If level=1 => special single Banana L2
-      if (levelNumber===1){
-        customers=[{
-          id:1,
-          requests:[{
-            fruit:"Banana",
-            level:1,
-            quantity:1
-          }],
-          fulfilled:false
-        }];
-      }
-      return customers;
-    }
- 
-    function getRandomInt(min, max){
-      return Math.floor(Math.random()* (max-min+1))+min;
-    }
- 
-    function resetCustomers(){
-      customers= generateLevel(level);
-      Composite.allBodies(world).forEach(body=>{
-        if(body.fruitType){
-          Composite.remove(world, body);
-        }
+    let storedCustomers = {}; // Object to store customer requests for each level
+
+    function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateLevel(levelNumber) {
+  let minCustomers = Math.min(3, 1 + Math.floor(levelNumber / 3));
+  let maxCustomers = Math.min(10, 3 + Math.floor(levelNumber / 2));
+  let numCustomers = getRandomInt(minCustomers, maxCustomers);
+
+  let customers = [];
+  for (let i = 0; i < numCustomers; i++) {
+    let requests = [];
+    let numRequests = Math.min(5, 1 + Math.floor(levelNumber / 5));
+    for (let r = 0; r < numRequests; r++) {
+      let fruitType = allFruits[Math.floor(Math.random() * allFruits.length)];
+      let maxFruitLevelIndex = Math.min(3, Math.floor(levelNumber / 3));
+      let fruitLevel = getRandomInt(1, maxFruitLevelIndex);
+      let quantity = getRandomInt(1, Math.min(3, 1 + Math.floor(levelNumber / 5)));
+
+      requests.push({
+        fruit: fruitType,
+        level: fruitLevel,
+        quantity: quantity,
       });
-      console.log("Cup cleared + customers reset for level "+level);
     }
- 
+    customers.push({
+      id: i + 1,
+      requests,
+      fulfilled: false,
+    });
+  }
+
+  // Special case for level 1
+  if (levelNumber === 1) {
+    customers = [
+      {
+        id: 1,
+        requests: [
+          {
+            fruit: "Banana",
+            level: 1,
+            quantity: 1,
+          },
+        ],
+        fulfilled: false,
+      },
+    ];
+  }
+
+  return customers;
+}
+
+function resetCustomers() {
+  if (!storedCustomers[level]) {
+    // Generate and store customers if not already saved for the level
+    storedCustomers[level] = generateLevel(level);
+  }
+
+  // Use stored customers
+  customers = JSON.parse(JSON.stringify(storedCustomers[level]));
+
+  // Clear the cup by removing all fruits
+  Composite.allBodies(world).forEach(body => {
+    if (body.fruitType) {
+      Composite.remove(world, body);
+    }
+  });
+
+  console.log("Cup cleared + customers reset for level " + level);
+}
+
+function resetLevel() {
+  console.log(`Restarting level ${level}...`);
+  resetCustomers();
+
+  // Clear the cup
+  Composite.allBodies(world).forEach(body => {
+    if (body.fruitType) {
+      Composite.remove(world, body);
+    }
+  });
+
+  // Log level start to Firebase
+  firebase.analytics().logEvent("level_start", {
+    level_number: level,
+  });
+
+  console.log("Level restarted with the same customer requests.");
+}
+
     // -------------- CREATE FRUIT (key function) --------------
 
     // 1) Tweak engine iterations
@@ -402,18 +446,19 @@ engine.velocityIterations = 6;
   if (hasOpenTex && hasClosedTex) {
     // Assign a per-body blinkData
     fruit.blinkData = {
-      state: "Open",         // start as Open
-      timer: 0,              // tick counter
-      threshold: 80 + Math.floor(Math.random() * 60) 
-         // any random timing you like, so each fruit blinks out of sync
-    };
+  state: "Open",          // Start with the "Open" state
+  timer: 0,               // Timer to track state duration
+  openThreshold: 200 + Math.floor(Math.random() * 100),  // Longer "Open" duration (200–300 frames)
+  closedThreshold: 30 + Math.floor(Math.random() * 20)   // Shorter "Closed" duration (30–50 frames)
+};
+
   }
 
   return fruit;
 } 
 function dropFruit() {
   let curr = currentFruit();
-  let fruit = createFruit(guideLine.x, 200, curr.type, curr.level);
+  let fruit = createFruit(guideLine.x, guideLine.y, curr.type, curr.level);
 
   // Give it a slight random spin & horizontal velocity
   Matter.Body.setAngularVelocity(fruit, (Math.random() - 0.5) * 0.2);
@@ -490,38 +535,88 @@ function dropFruit() {
   }
 }
  
-    function resetLevel() {
-      console.log(`Restarting level ${level}...`);
-      resetCustomers();
-      Composite.allBodies(world).forEach(body => {
-        if (body.fruitType) {
-            Composite.remove(world, body);
-        }
-      });
-      console.log("Level restarted and cup cleared.");
+function resetLevel() {
+  console.log(`Restarting level ${level}...`);
+  resetCustomers();
+  Composite.allBodies(world).forEach(body => {
+    if (body.fruitType) {
+      Composite.remove(world, body);
     }
- 
-    function mergeFruits(bodyA, bodyB){
-      let fruitType= bodyA.fruitType;
-      let level= bodyA.fruitLevel;
-      let typeData= fruitHierarchy[fruitType];
-      let maxLevel= typeData.levels.length-1;
- 
-      Composite.remove(world,bodyA);
-      Composite.remove(world,bodyB);
- 
-      if(level===maxLevel){
-        coins+=5;
-        console.log("5 coins added (max level merge). total:"+ coins);
-      }
-      if(level<maxLevel){
-        let newX= (bodyA.position.x+ bodyB.position.x)/2;
-        let newY= (bodyA.position.y+ bodyB.position.y)/2;
-        let merged= createFruit(newX,newY, fruitType, level+1);
-        Composite.add(world, merged);
-      }
+  });
+
+  // Log level start to Firebase
+  firebase.analytics().logEvent('level_start', {
+    level_number: level,
+  });
+
+  console.log("Level restarted and cup cleared.");
+}
+
+let consecutiveMerges = 0;
+let lastMergeTime = Date.now();
+const mergeTimeout = 2000; // Timeout in ms to reset merge streak
+
+function mergeFruits(bodyA, bodyB) {
+  let fruitType = bodyA.fruitType;
+  let level = bodyA.fruitLevel;
+  let typeData = fruitHierarchy[fruitType];
+  let maxLevel = typeData.levels.length - 1;
+
+  Composite.remove(world, bodyA);
+  Composite.remove(world, bodyB);
+
+  // Increment consecutive merges if within timeout
+  const now = Date.now();
+  if (now - lastMergeTime < mergeTimeout) {
+    consecutiveMerges++;
+  } else {
+    consecutiveMerges = 1; // Reset to 1 for a new streak
+  }
+  lastMergeTime = now;
+
+  // Show multiplier text
+  if (consecutiveMerges > 1) {
+    createFloatingText(`${consecutiveMerges}x`, (bodyA.position.x + bodyB.position.x) / 2, (bodyA.position.y + bodyB.position.y) / 2);
+  }
+
+  if (level === maxLevel) {
+    coins += 5;
+    console.log("5 coins added (max level merge). total:" + coins);
+  } else {
+    let newX = (bodyA.position.x + bodyB.position.x) / 2;
+    let newY = (bodyA.position.y + bodyB.position.y) / 2;
+    let merged = createFruit(newX, newY, fruitType, level + 1);
+    Composite.add(world, merged);
+  }
+} 
+
+const floatingTexts = [];
+
+function createFloatingText(text, x, y) {
+  floatingTexts.push({ text, x, y, opacity: 1, time: Date.now() });
+}
+
+function drawFloatingTexts(ctx) {
+  const now = Date.now();
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    const ft = floatingTexts[i];
+    const elapsed = (now - ft.time) / 1000;
+    ft.opacity -= elapsed * 0.1; // Fade out over 2 seconds
+    ft.y -= elapsed * 20; // Move up slightly
+
+    if (ft.opacity <= 0) {
+      floatingTexts.splice(i, 1); // Remove when fully faded
+    } else {
+      ctx.globalAlpha = ft.opacity;
+      ctx.font = "40px 'Fredoka One', sans-serif";
+      ctx.fillStyle = "yellow";
+      ctx.textAlign = "center";
+      ctx.fillText(ft.text, ft.x, ft.y);
+      ctx.globalAlpha = 1; // Reset alpha
     }
- 
+  }
+}
+
     Events.on(engine,'collisionStart',(event)=>{
       let pairs= event.pairs;
       pairs.forEach((pair)=>{
@@ -537,6 +632,7 @@ function dropFruit() {
       });
     });
  
+
     function checkCustomerRequests(){
       customers.forEach(customer=>{
         if(!customer.fulfilled){
@@ -563,6 +659,12 @@ function dropFruit() {
       }
     }
  
+    function updateUserProperties() {
+  firebase.analytics().setUserProperties({
+    total_coins: coins,
+    max_level: level,
+  });
+}
 
     function showPopupAndProceed() {
   if (document.getElementById('popupOverlay')) return;
@@ -573,7 +675,11 @@ function dropFruit() {
     firebase.analytics().logEvent('level_complete', {
     level_number: level,
     coins_earned: 10
-  });
+
+    });
+
+    updateUserProperties(); // Update user properties
+
 
   var overlay = document.createElement('div');
   overlay.id = 'popupOverlay';
@@ -659,6 +765,8 @@ function dropFruit() {
       displaySeeds(ctx);  // <--- new function to show seeds below coins
  
       drawFruitsWithText(ctx);
+      drawFloatingTexts(ctx); // Render floating texts
+
       analyzeCup();
  
       requestAnimationFrame(renderLoop);
@@ -667,8 +775,8 @@ function dropFruit() {
     function drawGuideLine(ctx) {
     // Draw the guide line
     ctx.beginPath();
-    ctx.moveTo(guideLine.x, 240);
-    ctx.lineTo(guideLine.x, 400);
+    ctx.moveTo(guideLine.x, guideLine.y); // Use guideLine.y instead of a hardcoded value
+    ctx.lineTo(guideLine.x, guideLine.y + 200); // Extend downward
     ctx.strokeStyle = "black";
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
@@ -687,7 +795,7 @@ function dropFruit() {
             ctx.drawImage(
                 textures[curr.type],
                 guideLine.x - lvlData.radius,
-                200 - lvlData.radius,
+                guideLine.y - lvlData.radius,
                 lvlData.radius * 2,
                 lvlData.radius * 2
             );
@@ -695,7 +803,7 @@ function dropFruit() {
     } else {
         // Draw a simple circle if no texture is available
         ctx.beginPath();
-        ctx.arc(guideLine.x, 200, lvlData.radius, 0, 2 * Math.PI);
+        ctx.arc(guideLine.x, guideLine.y, lvlData.radius, 0, 2 * Math.PI);
         ctx.fillStyle = lvlData.color;
         ctx.fill();
         ctx.strokeStyle = "black";
@@ -703,17 +811,17 @@ function dropFruit() {
     }
 
     // Draw the fruit level text
-    const textColor = getContrastColor(lvlData.color);
-    ctx.font = "16px 'Sour Gummy', sans-serif";
-    ctx.fillStyle = textColor;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText((curr.level + 1), guideLine.x, 200);
+    // const textColor = getContrastColor(lvlData.color);
+    // ctx.font = "16px 'Sour Gummy', sans-serif";
+    // ctx.fillStyle = textColor;
+    // ctx.textAlign = "center";
+    // ctx.textBaseline = "middle";
+    // ctx.fillText((curr.level + 1), guideLine.x, guideLine.y);
 
     // Draw the fruit type text
     ctx.fillStyle = "black";
     ctx.font = "18px 'Sour Gummy', sans-serif";
-    ctx.fillText(curr.type, guideLine.x, 230);
+    ctx.fillText(curr.type, guideLine.x, guideLine.y+30);
 }
  
     function drawUpcomingFruits(ctx) {
@@ -776,8 +884,8 @@ function dropFruit() {
 
 function drawCustomers(ctx) {
     let startX = 250;
-    let startY = cupCenterY + cupHeight / 2 - 520;
-    let horizontalSpacing = 300;
+    let startY = cupCenterY + cupHeight / 2 - 530;
+    let horizontalSpacing = 100;
 
     // Title
     ctx.font = "20px 'Fredoka One', sans-serif";
@@ -849,15 +957,15 @@ function drawCustomers(ctx) {
 
 function updateBlinkStates() {
   Composite.allBodies(world).forEach(body => {
-    // Skip bodies that have no blink data
     if (!body.blinkData) return;
 
-    // Increment that body's timer
     body.blinkData.timer++;
 
-    // When it exceeds threshold, flip the state
-    if (body.blinkData.timer >= body.blinkData.threshold) {
-      body.blinkData.state = (body.blinkData.state === "Open") ? "Closed" : "Open";
+    if (body.blinkData.state === "Open" && body.blinkData.timer >= body.blinkData.openThreshold) {
+      body.blinkData.state = "Closed";
+      body.blinkData.timer = 0;
+    } else if (body.blinkData.state === "Closed" && body.blinkData.timer >= body.blinkData.closedThreshold) {
+      body.blinkData.state = "Open";
       body.blinkData.timer = 0;
     }
   });
