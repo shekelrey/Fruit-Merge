@@ -20,13 +20,20 @@
   <style>
 #barn-cover {
   position: absolute;
-  top: -200px; /* Align to the top of the Pachinko container */
-  left: -200px; /* Align to the left of the Pachinko container */
-  width: 0%; /* Cover the entire Pachinko canvas */
-  height: 400px; /* Match the Pachinko canvas height */
+  top: -100px; /* Align to the top of the Pachinko container */
+  left: -100px; /* Align to the left of the Pachinko container */
+  width: 200px; /* Cover the entire Pachinko canvas */
+  height: 200px; /* Match the Pachinko canvas height */
   display: block; /* Hide with JavaScript when necessary */
-  background: rgba(255, 255, 255, 0.8); /* Optional semi-transparent background */
+  background: none; /* Optional semi-transparent background */
   z-index: 1; /* Ensure it stays above Pachinko elements */
+  transition: opacity 1s ease-out; /* Smooth fade-out transition */
+  opacity: 1; /* Fully visible initially */
+}
+
+#barn-image {
+  width: 250%; /* Ensure the image scales to fit */
+  height: auto; /* Maintain aspect ratio */
 }
 
     body {
@@ -102,6 +109,7 @@
   justify-content: center;
   text-align: center;
   padding: 20px;
+  z-index: 10000;
   box-sizing: border-box;
   font-family: 'Fredoka One', sans-serif; /* Consistent font styling */
   color: black; /* Text color for better readability */
@@ -136,6 +144,26 @@
   background-color: #e0b030; /* Slightly darker color on hover */
 }
 
+#muteButton {
+  position: absolute;
+  top: 20px; /* Adjust for spacing */
+  right: 650px; /* Adjust for spacing */
+  z-index: 10000; /* Ensure it's above other elements */
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  color: white; /* Button text color */
+  border: none;
+  padding: 10px 15px;
+  font-size: 20px;
+  border-radius: 50%; /* Make it circular */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#muteButton:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+
   </style>
 </head>
  
@@ -144,6 +172,30 @@
   <div id="loading-screen" style="position: fixed; width: 100%; height: 100%; background: black; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 9999;">
     Loading...
   </div>
+
+    <!-- Audio for Background Music -->
+    <audio id="backgroundMusic" loop>
+      <source src="background_music.mp3" type="audio/mp3">
+      Your browser does not support the audio element.
+    </audio>
+
+    <audio id="mergeSound">
+      <source src="merge1.wav" type="audio/wav">
+      Your browser does not support the audio element.
+    </audio>
+ 
+    <audio id="orderFulfilledSound">
+      <source src="Order_fulfilled.mp3" type="audio/mp3">
+      Your browser does not support the audio element.
+    </audio>
+    
+    <audio id="cartoonSlurpSound">
+      <source src="Cartoon_Slurp.mp3" type="audio/mp3">
+      Your browser does not support the audio element.
+    </audio>
+
+      <!-- Mute Button -->
+  <button id="muteButton">🔊</button>
 
   <div id="background-layer"></div>
   <div id="game-container"></div>
@@ -204,9 +256,44 @@
     textures["Strawberry_Open"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png'];
     textures["Strawberry_Closed"] = loadedAssets['https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_closed1.png'];
 
+
     // Start the game loop or initialization
     startGame();
   }
+
+    // Play background music when the page is loaded
+    window.addEventListener('load', () => {
+      const music = document.getElementById('backgroundMusic');
+      music.volume = 0.02; // Set initial volume to 50%
+      music.play().catch(err => {
+        console.warn("Autoplay was prevented:", err);
+      });
+      // Optional: Add a click to enable autoplay if necessary
+      document.body.addEventListener('click', () => {
+        if (music.paused) {
+          music.play();
+        }
+      }, { once: true });
+    });
+
+    // Background Music
+const backgroundMusic = document.getElementById('backgroundMusic');
+const muteButton = document.getElementById('muteButton');
+
+// Automatically start playing the music when the page loads
+backgroundMusic.volume = 0.5; // Adjust volume as needed
+backgroundMusic.play();
+
+// Toggle mute/unmute
+muteButton.addEventListener('click', () => {
+  if (backgroundMusic.muted) {
+    backgroundMusic.muted = false;
+    muteButton.textContent = '🔊'; // Update button icon
+  } else {
+    backgroundMusic.muted = true;
+    muteButton.textContent = '🔇'; // Update button icon
+  }
+});
 
 
   // Collect Asset URLs
@@ -520,6 +607,23 @@ function resetCustomers() {
   });
 
   console.log("Cup cleared + customers reset for level " + level);
+    // Update barn visibility for the new level
+    updateBarnVisibility(level);
+}
+
+let barnFadedOut = false; // Track if the barn has already faded out
+
+function updateBarnVisibility(level) {
+  const barnCover = document.getElementById("barn-cover");
+
+  if (level === 2 && !barnFadedOut) {
+    // Fade out at level 5
+    barnCover.style.opacity = 0; // Start fade-out
+    barnFadedOut = true; // Mark as faded out to prevent further changes
+    setTimeout(() => {
+      barnCover.style.display = "none"; // Fully hide after fade-out
+    }, 1000); // Match the transition duration
+  }
 }
 
 function resetLevel() {
@@ -685,6 +789,12 @@ function mergeFruits(bodyA, bodyB) {
   let typeData = fruitHierarchy[fruitType];
   let maxLevel = typeData.levels.length - 1;
 
+    // Play merge sound
+    const mergeSound = document.getElementById("mergeSound");
+  mergeSound.currentTime = 0; // Reset playback for overlapping merges
+  mergeSound.play();
+
+
   Composite.remove(world, bodyA);
   Composite.remove(world, bodyB);
 
@@ -803,6 +913,14 @@ function drawFloatingTexts(ctx) {
 
     updateUserProperties(); // Update user properties
 
+  // Play sound effects in sequence
+  const orderFulfilledSound = document.getElementById('orderFulfilledSound');
+  const cartoonSlurpSound = document.getElementById('cartoonSlurpSound');
+
+  orderFulfilledSound.play();
+  orderFulfilledSound.onended = () => {
+    cartoonSlurpSound.play();
+  };
 
   var overlay = document.createElement('div');
   overlay.id = 'popupOverlay';
@@ -813,7 +931,7 @@ function drawFloatingTexts(ctx) {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    z-index: 10000;
   `;
   document.body.appendChild(overlay);
 
@@ -841,6 +959,7 @@ function drawFloatingTexts(ctx) {
       document.body.removeChild(overlay);
       gamePaused = false;
       level++;
+      updateBarnVisibility(level); // Update barn visibility
       resetCustomers();
     });
   }
@@ -1510,10 +1629,10 @@ function updateBlinkStates() {
             pCtx.fillStyle= lane.color;
             pCtx.fill();
           }
-          pCtx.fillStyle='#000';
-          pCtx.font="14px 'Sour Gummy', sans-serif";
-          pCtx.textAlign='left';
-          pCtx.textBaseline='middle';
+          // pCtx.fillStyle='#000';
+          // pCtx.font="14px 'Sour Gummy', sans-serif";
+          // pCtx.textAlign='left';
+          // pCtx.textBaseline='middle';
           pCtx.fillText(fruit, 5, lane.yCenter);
         }
       });
