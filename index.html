@@ -18,6 +18,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics-compat.js"></script>
  
   <style>
+#barn-cover {
+  position: absolute;
+  top: -200px; /* Align to the top of the Pachinko container */
+  left: -200px; /* Align to the left of the Pachinko container */
+  width: 0%; /* Cover the entire Pachinko canvas */
+  height: 400px; /* Match the Pachinko canvas height */
+  display: block; /* Hide with JavaScript when necessary */
+  background: rgba(255, 255, 255, 0.8); /* Optional semi-transparent background */
+  z-index: 1; /* Ensure it stays above Pachinko elements */
+}
+
     body {
       margin: 0;
       padding: 0;
@@ -61,7 +72,7 @@
  
     .pachinko-container {
       position: absolute;
-      top: 100px; /* Adjust as needed */
+      top: 282px; /* Adjust as needed */
       left: 800px;
       width: 320px;
       height: 500px;
@@ -70,10 +81,10 @@
  
     #pachinkoCanvas {
       width: 320px;
-      height: 500px;
+      height: 400px;
       background: transparent;
       pointer-events: auto;  /* Re-enable clicks on this canvas */
-      border: 2px solid rgba(255,255,255,0.2);
+      /* border: 2px solid rgba(255,255,255,0.2); */
     }
 
     .popupBox {
@@ -139,10 +150,16 @@
  
   <!-- Pachinko container & canvas -->
   <div class="pachinko-container">
+    <!-- Barn Cover for Pachinko -->
+<div id="barn-cover">
+  <img src="./barn.png" alt="Barn Cover" id="barn-image">
+</div>
+
     <canvas id="pachinkoCanvas"></canvas>
   </div>
  
   <script>
+    
 
   // Preloader Function
   function preloadAssets(assetUrls, onComplete) {
@@ -286,9 +303,25 @@
     var cupHeight = 300;
     var cupBottomY = cupCenterY + cupHeight / 2;
        
-    var level = 1;
+    var level = 1; // Level initialization
+
+    // Function to toggle the barn cover visibility
+    function toggleBarnCover(show) {
+      const barnCover = document.getElementById("barn-cover");
+      barnCover.style.display = show ? "block" : "none";
+    }
+
+    // Set initial barn visibility based on the starting level
+    if (level > 5) {
+      toggleBarnCover(false); // Show Pachinko
+    } else {
+      toggleBarnCover(true); // Keep Barn covering
+    }
+
     var coins = 0;  // track coins
     var seeds = 20; // track seeds (currency); starts at 20
+
+
 
     // Cup bodies
     var bottom = Bodies.rectangle(cupCenterX, cupCenterY + cupHeight / 2, cupWidthBottom, 40, {
@@ -330,10 +363,10 @@
     var fruitHierarchy = {
       'Strawberry': {
         levels: [
-          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
-          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
-          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
-          { color: '#6f472a', radius: 60 , texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' }
+          { color: '#c08459', radius: 25, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
+          { color: '#a66a3f', radius: 35, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
+          { color: '#8e5b36', radius: 45, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' },
+          { color: '#6f472a', radius: 55 , texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png' }
         ]
       },
       'Kiwi': {
@@ -346,10 +379,10 @@
       },
       'Blueberry': {
         levels: [
-          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
-          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
-          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
-          { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' }
+          { color: '#c08459', radius: 20, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
+          { color: '#a66a3f', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
+          { color: '#8e5b36', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' },
+          { color: '#6f472a', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blueberry_open1.png' }
         ]
       },  
       'Watermelon': {
@@ -1229,7 +1262,16 @@ function updateBlinkStates() {
     /**************************************************************
      * 3) PACHINKO CODE
      **************************************************************/
-    const pachinkoCanvas = document.getElementById("pachinkoCanvas");
+
+
+// Example usage: Hide the barn after level 5
+    if (level > 1) {
+      toggleBarnCover(false); // Show Pachinko
+    } else {
+      toggleBarnCover(true);  // Keep Barn covering
+    }
+    
+     const pachinkoCanvas = document.getElementById("pachinkoCanvas");
     const pCtx = pachinkoCanvas.getContext("2d");
  
     let pWidth = pachinkoCanvas.clientWidth;
