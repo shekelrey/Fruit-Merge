@@ -214,6 +214,24 @@
 
     <canvas id="pachinkoCanvas"></canvas>
   </div>
+
+  <!-- near the bottom of <body>... -->
+<div id="frenzyOverlay" style="
+position: fixed;
+top:0; left:0;
+width:100%; height:100%;
+background: rgba(0,0,0,0.5);
+z-index:9999;
+text-align:center;
+display:none;
+color:white;
+font-family: 'Fredoka One', sans-serif;
+font-size: 36px;
+padding-top: 200px;
+">
+<h1>FRUIT FRENZY!</h1>
+<p>Merge as many fruits as you can in 10 seconds!</p>
+</div>
  
   <script>
     
@@ -269,8 +287,21 @@ textures["root4"] = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fr
 textures["root_mango"]      = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root_mango.png"];
 textures["root_pineapple"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root_pineapple.png"];
 textures["root_lychee"]     = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root_lychee.png"];
-    
 
+textures["Mango_Open"] = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/mango_open.png"];
+textures["Mango_Closed"] = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/mango_closed.png"];
+
+textures["Pineapple_Open"] = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/pineapple_open.png"];
+textures["Pineapple_Closed"] = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/pineapple_closed.png"];
+
+textures["Lychee_Open"] = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/lychee_open.png"];
+textures["Lychee_Closed"] = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/lychee_closed.png"];
+
+textures["blob_green1"]   = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_green1.png"];
+  textures["blob_orange1"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_orange1.png"];
+  textures["blob_pink1"]    = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_pink1.png"];
+  textures["blob_purple1"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple1.png"];
+  textures["blob_red1"]     = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red1.png"];
 
     // Start the game loop or initialization
     startGame();
@@ -333,7 +364,17 @@ muteButton.addEventListener('click', () => {
     'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root4.png',
     'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root_mango.png',
     'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root_pineapple.png',
-    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root_lychee.png'
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/root_lychee.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/mango_open.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/pineapple_open.png',
+    'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/lychee_open.png',
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_green1.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_orange1.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_pink1.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple1.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red1.png", 
+
+
   ];
 
     /**************************************************************
@@ -496,10 +537,10 @@ muteButton.addEventListener('click', () => {
       },  
       'Watermelon': {
         levels: [
-          { color: '#c08459', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
-          { color: '#a66a3f', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
-          { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
-          { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' }
+          { color: '#c08459', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
+          { color: '#a66a3f', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
+          { color: '#8e5b36', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' },
+          { color: '#6f472a', radius: 70, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/watermelon_open1.png' }
         ]
       },
       'Peach': {
@@ -517,7 +558,32 @@ muteButton.addEventListener('click', () => {
           { color: '#8e5b36', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png' },
           { color: '#6f472a', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/banana_open1.png' }
         ]
+      },
+      'Mango': {
+        levels: [
+          { color: '#ffaa00', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/mango_open.png'},
+          { color: '#ffaa00', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/mango_open.png' },
+          { color: '#ffaa00', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/mango_open.png' },
+          { color: '#ffaa00', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/mango_open.png' }
+        ]
+      },
+      'Pineapple': {
+        levels: [
+          { color: '#ccff55', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/pineapple_open.png' },
+          { color: '#ccff55', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/pineapple_open.png' },
+          { color: '#ccff55', radius: 60, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/pineapple_open.png' },
+          { color: '#ccff55', radius: 70, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/pineapple_open.png' }
+        ]
+      },
+      'Lychee': {
+        levels: [
+          { color: '#ff66aa', radius: 20, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/lychee_open.png' },
+          { color: '#ff66aa', radius: 30, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/lychee_open.png' },
+          { color: '#ff66aa', radius: 40, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/lychee_open.png' },
+          { color: '#ff66aa', radius: 50, texture: 'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/lychee_open.png' }
+        ]
       }
+
     };
     var allFruits = Object.keys(fruitHierarchy);
 
@@ -554,15 +620,33 @@ muteButton.addEventListener('click', () => {
         }
     });
 
+    const standardFruits = ["Strawberry","Kiwi","Blueberry","Watermelon","Peach","Banana"];
+    const specialFruits = ["Mango","Pineapple","Lychee"];
+    // const allFruits = standardFruits.concat(specialFruits);
  
+    const lanes = {
+  Mango:     { xStart: 20,  yStart: 330, width: 90, height: 90 },
+  Pineapple: { xStart: 130, yStart: 330, width: 90, height: 90 },
+  Lychee:    { xStart: 250, yStart: 330, width: 90, height: 90 }
+};
     // -------------- CUSTOMERS --------------
     let levelNumber = 1;
     let customers = generateLevel(levelNumber);
     let storedCustomers = {}; // Object to store customer requests for each level
 
+
     function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+// Predefine a list of possible blob filenames (the keys you used above)
+const availableBlobs = [
+  "blob_green1",
+  "blob_orange1",
+  "blob_pink1",
+  "blob_purple1",
+  "blob_red1",
+];
 
 function generateLevel(levelNumber) {
   let minCustomers = Math.min(3, 1 + Math.floor(levelNumber / 3));
@@ -612,6 +696,123 @@ function generateLevel(levelNumber) {
   return customers;
 }
 
+    /***********************************************************
+     * 0) GLOBAL FRENZY VARIABLES
+     ***********************************************************/
+     let frenzyActive      = false;
+    let frenzyFruitType   = null;
+    let autoSpawnInterval = null; // for setInterval handle
+    let frenzyPhaseTimeout = null; // handle for setTimeouts
+
+    // Clears the cup and sets customers = [] so there's nothing on screen
+function clearCupAndCustomers() {
+  // Remove all fruit bodies
+  Composite.allBodies(world).forEach(body => {
+    if (body.fruitType) {
+      Composite.remove(world, body);
+    }
+  });
+  // Clear out any existing customers
+  customers = [];
+}
+
+/***********************************************************
+ * 2) FRUIT FRENZY FLOW
+ ***********************************************************/
+// Called after the user clicks "Next Level" but BEFORE the next level actually starts
+function startFrenzyAfterLevel() {
+  frenzyActive = true;
+
+  // 1) Clear everything from the previous level
+  clearCupAndCustomers();
+
+  // 2) Pick a random fruit
+  frenzyFruitType = standardFruits[Math.floor(Math.random() * standardFruits.length)];
+
+  // 3) Show a short "Frenzy" banner for 2 seconds (but no dropping yet)
+  const frenzyOverlay = document.getElementById('frenzyOverlay');
+  frenzyOverlay.style.display = 'block';
+  frenzyOverlay.innerHTML = `
+    <h1>FRUIT FRENZY!</h1>
+    <p>Get ready to merge <b>${frenzyFruitType}</b> soon...</p>
+  `;
+
+  // Wait 2 seconds, then hide banner and start 10s auto-drop
+  frenzyPhaseTimeout = setTimeout(() => {
+    // Hide banner so the cup is fully visible
+    frenzyOverlay.style.display = 'none';
+
+    // Start the 10s spree
+    startFrenzySpawning();
+  }, 2000);
+}
+
+function startFrenzySpawning() {
+  if (!frenzyActive) return;
+
+  // We could show an updated overlay or just keep it hidden:
+  // const frenzyOverlay = document.getElementById('frenzyOverlay');
+  // frenzyOverlay.style.display = 'block';
+  // frenzyOverlay.innerHTML = `
+  //   <h1>FRUIT FRENZY!</h1>
+  //   <p>Merge as many <b>${frenzyFruitType}</b> as you can in 10 seconds!</p>
+  // `;
+
+  // Every 300ms, drop that single fruit
+  autoSpawnInterval = setInterval(spawnFrenzyFruit, 100);
+
+  // End after 10s
+  frenzyPhaseTimeout = setTimeout(endFruitFrenzy, 15000);
+}
+
+function spawnFrenzyFruit() {
+  if (!frenzyActive) return;
+  let fruit = createFruit(guideLine.x, guideLine.y, frenzyFruitType, 0);
+  Matter.Body.setAngularVelocity(fruit, (Math.random() - 0.5) * 0.4);
+  Matter.Body.setVelocity(fruit, { x: (Math.random() - 0.5), y: 0 });
+  Composite.add(world, fruit);
+}
+
+function endFruitFrenzy() {
+  if (!frenzyActive) return;
+  frenzyActive = false;
+
+  clearInterval(autoSpawnInterval);
+  clearTimeout(frenzyPhaseTimeout);
+
+  // Hide overlay
+  document.getElementById('frenzyOverlay').style.display = 'none';
+
+  // Empty the cup again
+  Composite.allBodies(world).forEach(body => {
+    if (body.fruitType) {
+      Composite.remove(world, body);
+    }
+  });
+
+  // Now actually start the next level
+  resetCustomers();
+}
+
+function endFrenzyImmediately() {
+  frenzyActive = false;
+  
+  clearInterval(autoSpawnInterval);
+  clearTimeout(frenzyPhaseTimeout);
+
+  document.getElementById('frenzyOverlay').style.display = 'none';
+
+  // Remove any fruits in the cup
+  Composite.allBodies(world).forEach(body => {
+    if (body.fruitType) {
+      Composite.remove(world, body);
+    }
+  });
+
+  // Start the next level directly, no popup
+  resetCustomers();
+}
+
 function resetCustomers() {
   if (!storedCustomers[level]) {
     // Generate and store customers if not already saved for the level
@@ -638,7 +839,7 @@ let barnFadedOut = false; // Track if the barn has already faded out
 function updateBarnVisibility(level) {
   const barnCover = document.getElementById("barn-cover");
 
-  if (level === 2 && !barnFadedOut) {
+  if (level === 4 && !barnFadedOut) {
     // Fade out at level 5
     barnCover.style.opacity = 0; // Start fade-out
     barnFadedOut = true; // Mark as faded out to prevent further changes
@@ -706,6 +907,11 @@ engine.velocityIterations = 6;
   return fruit;
 } 
 function dropFruit() {
+
+  if (frenzyActive) {
+        // If we want to DISABLE manual dropping during Frenzy:
+        return;
+      }
   let curr = currentFruit();
   let fruit = createFruit(guideLine.x, guideLine.y, curr.type, curr.level);
 
@@ -728,12 +934,15 @@ function dropFruit() {
     ];
     function currentFruit(){ return upcomingFruits[0]; }
  
-    function getRandomFruitEntry(){
-      return {
-        type: allFruits[Math.floor(Math.random()*allFruits.length)],
-        level: 0
-      };
-    } 
+    function getRandomFruitEntry() {
+  // pick from standardFruits so that Mango, Pineapple, Lychee never appear randomly
+  const randomType = standardFruits[Math.floor(Math.random() * standardFruits.length)];
+  return {
+    type: randomType,
+    level: 0
+  };
+}
+
  
     function analyzeCup(){
       Composite.allBodies(world).forEach((body)=>{
@@ -749,9 +958,15 @@ function dropFruit() {
             }
           });
           // if fruit falls out bottom => loss
-          if(body.position.y>1000+ body.circleRadius){
-            showLossPopup();
-          }
+          if (body.position.y > 1000 + body.circleRadius) {
+  if (frenzyActive) {
+    // END FRENZY IMMEDIATELY — NO "YOU LOST" POPUP
+    endFrenzyImmediately();
+  } else {
+    // Normal game flow
+    showLossPopup();
+  }
+}
         }
       });
     }
@@ -888,31 +1103,35 @@ function drawFloatingTexts(ctx) {
     });
  
 
-    function checkCustomerRequests(){
-      customers.forEach(customer=>{
-        if(!customer.fulfilled){
-          const allInCup= customer.requests.every(req=>
-            Composite.allBodies(world).some(body=>
-              body.fruitType=== req.fruit && body.fruitLevel===req.level
-            )
-          );
-          if(allInCup){
-            customer.requests.forEach(req=>{
-              // remove them from the cup
-              Composite.allBodies(world).forEach(body=>{
-                if(body.fruitType===req.fruit && body.fruitLevel===req.level){
-                  Composite.remove(world,body);
-                }
-              });
-            });
-            customer.fulfilled=true;
-          }
-        }
-      });
-      if( customers.every(c=> c.fulfilled)){
-        showPopupAndProceed();
+    function checkCustomerRequests() {
+  // 1) If we are in Frenzy, do not process customers at all
+  if (frenzyActive) return;
+
+  customers.forEach(customer => {
+    if (!customer.fulfilled) {
+      const allInCup = customer.requests.every(req =>
+        Composite.allBodies(world).some(body =>
+          body.fruitType === req.fruit && body.fruitLevel === req.level
+        )
+      );
+      if (allInCup) {
+        customer.requests.forEach(req => {
+          // remove them from the cup
+          Composite.allBodies(world).forEach(body => {
+            if (body.fruitType === req.fruit && body.fruitLevel === req.level) {
+              Composite.remove(world, body);
+            }
+          });
+        });
+        customer.fulfilled = true;
       }
     }
+  });
+
+  if (customers.every(c => c.fulfilled)) {
+    showPopupAndProceed();
+  }
+}
  
     function updateUserProperties() {
   firebase.analytics().setUserProperties({
@@ -921,73 +1140,46 @@ function drawFloatingTexts(ctx) {
   });
 }
 
-    function showPopupAndProceed() {
+function showPopupAndProceed() {
   if (document.getElementById('popupOverlay')) return;
   gamePaused = true;
   coins += 10;
-  
-    // Log the event to Firebase Analytics
-    firebase.analytics().logEvent('level_complete', {
-    level_number: level,
-    coins_earned: 10
 
-    });
+  firebase.analytics().logEvent('level_complete', { level_number: level, coins_earned: 10 });
+  updateUserProperties();
 
-    updateUserProperties(); // Update user properties
-
-  // Play sound effects in sequence
-  const orderFulfilledSound = document.getElementById('orderFulfilledSound');
-  const cartoonSlurpSound = document.getElementById('cartoonSlurpSound');
-
-  orderFulfilledSound.play();
-  orderFulfilledSound.onended = () => {
-    cartoonSlurpSound.play();
-  };
-
-  var overlay = document.createElement('div');
+  const overlay = document.createElement('div');
   overlay.id = 'popupOverlay';
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 10000;
-  `;
   document.body.appendChild(overlay);
 
-  var popup = document.createElement('div');
+  const popup = document.createElement('div');
   popup.className = 'popupBox';
   popup.innerHTML = `
     <h2>Level Complete!</h2>
-    </p>
-    </p>
-    </p>
-    </p>
-    </p>
-    </p>
-    </p>
-    </p> </p></p></p></p></p>
     <p>You have earned 10 coins!</p>
     <p>Total Coins: ${coins}</p>
     <button id="nextLevelBtn">Next Level</button>
   `;
   overlay.appendChild(popup);
 
-  var nextLevelButton = document.getElementById('nextLevelBtn');
+  const nextLevelButton = document.getElementById('nextLevelBtn');
   if (nextLevelButton) {
-    nextLevelButton.addEventListener('click', function () {
+    nextLevelButton.addEventListener('click', () => {
       document.body.removeChild(overlay);
       gamePaused = false;
       level++;
-      updateBarnVisibility(level); // Update barn visibility
-      resetCustomers();
+      updateBarnVisibility(level);
+
+      // If we want Frenzy at level 2 (for testing):
+      if (level % 3 === 0) {
+        startFrenzyAfterLevel();
+      } else {
+        // otherwise proceed normally
+        resetCustomers();
+      }
     });
   }
 }
-
-
  
     // Key controls
     var moveLeft=false, moveRight=false, moveSpeed=5;
@@ -1001,7 +1193,10 @@ function drawFloatingTexts(ctx) {
       } else if(event.key===' ' && !isSpacePressed && canDropFruit){
         isSpacePressed=true;
         canDropFruit=false;
+
+        // If not frenzy, do normal drop
         dropFruit();
+
         setTimeout(()=>{ canDropFruit=true; }, fruitCooldownTime);
       }
     });
@@ -1037,6 +1232,8 @@ function drawFloatingTexts(ctx) {
     })();
  
     function drawGuideLine(ctx) {
+      if (frenzyActive) return;
+
     // Draw the guide line
     ctx.beginPath();
     ctx.moveTo(guideLine.x, guideLine.y); // Use guideLine.y instead of a hardcoded value
@@ -1089,6 +1286,8 @@ function drawFloatingTexts(ctx) {
 }
  
     function drawUpcomingFruits(ctx) {
+      if (frenzyActive) return;
+
     let startX = 60;
     let startY = 350;
     let verticalSpacing = 70;
@@ -1098,11 +1297,11 @@ function drawFloatingTexts(ctx) {
     ctx.fillStyle = "black";
     ctx.fillText("Upcoming:", startX + 10, startY - 50);
 
-    for (let i = 1; i < upcomingFruits.length; i++) {
-        let fruitData = upcomingFruits[i];
+    for (let i = 0; i < upcomingFruits.length; i++) {
+      let fruitData = upcomingFruits[i];
         let type = fruitHierarchy[fruitData.type];
         let lvlData = type.levels[fruitData.level];
-        let yPos = startY + (i - 1) * verticalSpacing;
+        let yPos = startY + i * verticalSpacing;
 
         // If a texture is defined and preloaded, draw it
         if (lvlData.texture && textures[fruitData.type]) {
@@ -1251,7 +1450,7 @@ function updateBlinkStates() {
       ctx.font="30px 'Fredoka One', sans-serif";
       ctx.fillStyle="black";
       // We'll draw it around y=130
-      ctx.fillText("Seeds: "+ seeds, 82, 130);
+      ctx.fillText("Seeds: "+ seeds, 110, 130);
     }
 
     // Add a click listener to detect clicks on the Seeds area in the canvas
@@ -1417,6 +1616,10 @@ function updateBlinkStates() {
  
     let pWidth = pachinkoCanvas.clientWidth;
     let pHeight= pachinkoCanvas.clientHeight;
+    // For hover detection
+    let mousePos = { x: 0, y: 0 };
+    let hoverFruit = null;
+
     pachinkoCanvas.width= pWidth;
     pachinkoCanvas.height= pHeight;
  
@@ -1427,6 +1630,8 @@ function updateBlinkStates() {
     // We'll rename the old "seeds" object that stored Mango/Pineapple/Lichi to basketProgress
     const basketProgress = { Mango:0, Pineapple:0, Lychee:0 };
     let gardenFruits= { Mango:false, Pineapple:false, Lychee:false };
+   // NEW: Add harvestedFruits
+    let harvestedFruits = { Mango: false, Pineapple: false, Lychee: false }; 
 
     const balls= [];
     const pegs= [];
@@ -1627,65 +1832,126 @@ function updateBlinkStates() {
       // Show how many seeds remain (instead of old ballCount)
       pCtx.fillStyle='#000';
       pCtx.font="16px 'Sour Gummy', sans-serif";
-      pCtx.fillText(`Seeds left: ${seeds}`, 10, 20);
+      pCtx.fillText(`Seeds left: ${seeds}`, 80, 20);
     }
  
+
     function drawGarden() {
-  // Clear or fill the garden area
   pCtx.fillStyle = '#A7C957';
   pCtx.fillRect(0, pachinkoFieldHeight, pWidth, gardenHeight);
 
-  // Lanes describing each basket’s x-position, color, etc.
-  const lanes = {
-    Mango:     { xStart:  20, yCenter: pachinkoFieldHeight + 120, color: '#ffaa00' },
-    Pineapple: { xStart: 130, yCenter: pachinkoFieldHeight + 120, color: '#ccff55' },
-    Lychee:    { xStart: 250, yCenter: pachinkoFieldHeight + 120, color: '#ff66aa' }
-  };
 
-  // For each fruit in basketProgress, draw the correct stage
+
   Object.keys(basketProgress).forEach((fruit) => {
-    const lane = lanes[fruit];
+    const lane      = lanes[fruit];
     const seedCount = basketProgress[fruit];
 
-    // If we have 5 or more seeds, display the final fruit image
     if (seedCount >= 5) {
-      // e.g. fruit = "Mango" → "root_mango"
-      const finalKey = `root_${fruit.toLowerCase()}`;
+      // final stage
+      const finalKey   = `root_${fruit.toLowerCase()}`;
       const finalImage = textures[finalKey];
-
       if (finalImage && finalImage.complete) {
-        pCtx.drawImage(finalImage, lane.xStart - 20, 330, 90, 90); // Increased size
-  
+        // default size
+        let drawWidth  = lane.width;
+        let drawHeight = lane.height;
+
+        // Check if user is hovering over this fruit’s bounding box and it’s not harvested
+        if (
+          !harvestedFruits[fruit] &&
+          mousePos.x >= lane.xStart &&
+          mousePos.x <= lane.xStart + lane.width &&
+          mousePos.y >= lane.yStart &&
+          mousePos.y <= lane.yStart + lane.height
+        ) {
+          // Enlarge the tree by +10 px in each dimension
+          drawWidth  += 10;
+          drawHeight += 10;
+        }
+
+        // Center the “bigger” image so it doesn’t jump around too much
+        const offsetX = lane.xStart - (drawWidth - lane.width) / 2;
+        const offsetY = lane.yStart - (drawHeight - lane.height) / 2;
+
+        pCtx.drawImage(finalImage, offsetX, offsetY, drawWidth, drawHeight);
       }
     } else {
-      // For seeds 1..4, display the rootX.png image
-      // e.g. if seedCount = 3 → "root3"
-      const stage = Math.max(1, Math.min(seedCount, 4)); 
-      const stageKey = `root${stage}`; 
+      // 1..4 seeds => draw root stage
+      const stage     = Math.max(1, Math.min(seedCount, 4));
+      const stageKey  = `root${stage}`;
       const stageImage = textures[stageKey];
-
-      // Draw that stage if loaded
       if (stageImage && stageImage.complete) {
-        const size = stage === 4 ? 70 : 50; // Make root_4 larger
-        pCtx.drawImage(stageImage, lane.xStart - 10, 330, size, size);
-        console.log('Basket Progress:', basketProgress);
-        console.log('Garden Fruits:', gardenFruits);
+        // you can do the same “hover” enlargement if you want partial growth to be interactive
+        pCtx.drawImage(stageImage, lane.xStart - 10, 330, 50, 50);
       }
     }
   });
 }
+
     // Use seeds (currency) to drop pachinko balls
-    pachinkoCanvas.addEventListener('click', ()=>{
-      if(seeds>0){
-        seeds--;
-        balls.push({
-          x: dropX,
-          y: 30,
-          vx: (Math.random()-0.5)*3,
-          vy: 0
-        });
-      }
-    });
+    pachinkoCanvas.addEventListener('click', (e) => {
+  const rect = pachinkoCanvas.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const clickY = e.clientY - rect.top;
+  console.log(`pachinkoCanvas clicked at x=${clickX}, y=${clickY}`);
+
+  // 1) If user clicked high up, drop a ball (existing code):
+  if (clickY < pachinkoFieldHeight) {
+    if (seeds > 0) {
+      seeds--;
+      balls.push({
+        x: dropX,
+        y: 30,
+        vx: (Math.random() - 0.5) * 3,
+        vy: 0
+      });
+    }
+    return;
+  }
+
+  // 2) Else check if user clicked on any GROWN fruit
+  Object.keys(basketProgress).forEach((fruit) => {
+  if (basketProgress[fruit] >= 5 && !harvestedFruits[fruit]) {
+    const { xStart, yStart, width, height } = lanes[fruit];
+
+    if (
+      clickX >= xStart &&
+  clickX <= xStart + 120 &&
+  clickY >= yStart &&
+  clickY <= yStart + 120
+    ) {
+      console.log(`Inside bounding box for ${fruit} at [${clickX},${clickY}]`);
+      harvestTreeFruit(fruit);
+    }
+  }
+});
+});
+
+pachinkoCanvas.addEventListener('mousemove', (e) => {
+  const rect = pachinkoCanvas.getBoundingClientRect();
+  mousePos.x = e.clientX - rect.left;
+  mousePos.y = e.clientY - rect.top;
+});
+function harvestTreeFruit(fruitName) {
+  console.log("Harvesting " + fruitName + " from the garden!");
+  console.log("Before splice, upcomingFruits:", JSON.stringify(upcomingFruits));
+
+  // (1) Reset orchard state for this fruit
+  basketProgress[fruitName] = 0;
+  gardenFruits[fruitName]   = false;
+  harvestedFruits[fruitName]= false;
+// Then set the new fruit as the immediate drop
+upcomingFruits[0] = { type: fruitName, level: 0 };
+  // Option 1: Make it the VERY NEXT fruit to drop
+  console.log("After splice, upcomingFruits:", JSON.stringify(upcomingFruits));
+
+
+  // Option 2: Or push it into the queue behind the first
+  // upcomingFruits.splice(1, 0, { type: fruitName, level: 0 });
+
+  // Optionally play a “harvest” sound, show a “+1 fruit” text, etc.
+  // ...
+}
+
   </script>
 </body>
 </html>
