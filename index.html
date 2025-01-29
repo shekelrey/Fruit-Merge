@@ -147,7 +147,7 @@
 #muteButton {
   position: absolute;
   top: 20px; /* Adjust for spacing */
-  right: 5%; /* Adjust for spacing */
+  left: 1220px; /* Adjust for spacing */
   z-index: 10000; /* Ensure it's above other elements */
   background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
   color: white; /* Button text color */
@@ -462,7 +462,7 @@ muteButton.addEventListener('click', () => {
     }
 
     // Set initial barn visibility based on the starting level
-    if (level > 1) {
+    if (level > 3) {
       toggleBarnCover(false); // Show Pachinko
     } else {
       toggleBarnCover(true); // Keep Barn covering
@@ -624,6 +624,14 @@ muteButton.addEventListener('click', () => {
     const specialFruits = ["Mango","Pineapple","Lychee"];
     // const allFruits = standardFruits.concat(specialFruits);
  
+    const availableBlobs = [
+  "blob_green1",
+  "blob_orange1",
+  "blob_pink1",
+  "blob_purple1",
+  "blob_red1",
+];
+
     const lanes = {
   Mango:     { xStart: 20,  yStart: 330, width: 90, height: 90 },
   Pineapple: { xStart: 130, yStart: 330, width: 90, height: 90 },
@@ -640,43 +648,46 @@ muteButton.addEventListener('click', () => {
 }
 
 // Predefine a list of possible blob filenames (the keys you used above)
-const availableBlobs = [
-  "blob_green1",
-  "blob_orange1",
-  "blob_pink1",
-  "blob_purple1",
-  "blob_red1",
-];
+
 
 function generateLevel(levelNumber) {
+  // figure out how many customers
   let minCustomers = Math.min(3, 1 + Math.floor(levelNumber / 3));
   let maxCustomers = Math.min(10, 3 + Math.floor(levelNumber / 2));
   let numCustomers = getRandomInt(minCustomers, maxCustomers);
 
   let customers = [];
+
+  // For each customer...
   for (let i = 0; i < numCustomers; i++) {
+    // Build random fruit requests for that customer
     let requests = [];
-    let numRequests = Math.min(5, 1 + Math.floor(levelNumber / 5));
+    let numRequests = Math.min(5, 1 + Math.floor(levelNumber / 5));  // up to 5 fruit types
     for (let r = 0; r < numRequests; r++) {
+      // choose a random fruit & a random level
       let fruitType = allFruits[Math.floor(Math.random() * allFruits.length)];
       let maxFruitLevelIndex = Math.min(3, Math.floor(levelNumber / 3));
-      let fruitLevel = getRandomInt(1, maxFruitLevelIndex);
+      let fruitLevel = getRandomInt(1, maxFruitLevelIndex);  // 0..maxLevel
       let quantity = getRandomInt(1, Math.min(3, 1 + Math.floor(levelNumber / 5)));
 
       requests.push({
         fruit: fruitType,
         level: fruitLevel,
         quantity: quantity,
+        fulfilled: false
       });
     }
+
+    // Then create the customer object
     customers.push({
       id: i + 1,
       requests,
       fulfilled: false,
+      blobImage: ""  // will assign below
     });
   }
 
-  // Special case for level 1
+  // As a special case, if it’s level 1, we can give them simpler requests:
   if (levelNumber === 1) {
     customers = [
       {
@@ -684,17 +695,68 @@ function generateLevel(levelNumber) {
         requests: [
           {
             fruit: "Banana",
-            level: 1,
+            level: 1,  // means “first level” of Banana
             quantity: 1,
-          },
+            fulfilled: false
+          }
         ],
         fulfilled: false,
-      },
+        blobImage: ""
+      }
     ];
   }
 
+  // **Now** assign each customer a blob image from the available list
+  customers.forEach((customer, index) => {
+    // pick random or rotate
+    const randomBlob = availableBlobs[index % availableBlobs.length];
+    customer.blobImage = randomBlob;
+  });
+
   return customers;
 }
+
+  // for (let i = 0; i < numCustomers; i++) {
+  //   let requests = [];
+  //   let numRequests = Math.min(5, 1 + Math.floor(levelNumber / 5));
+  //   for (let r = 0; r < numRequests; r++) {
+  //     let fruitType = allFruits[Math.floor(Math.random() * allFruits.length)];
+  //     let maxFruitLevelIndex = Math.min(3, Math.floor(levelNumber / 3));
+  //     let fruitLevel = getRandomInt(1, maxFruitLevelIndex);
+  //     let quantity = getRandomInt(1, Math.min(3, 1 + Math.floor(levelNumber / 5)));
+
+  //     requests.push({
+  //       fruit: fruitType,
+  //       level: fruitLevel,
+  //       quantity: quantity,
+  //     });
+  //   }
+  //   customers.push({
+  //     id: i + 1,
+  //     requests,
+  //     fulfilled: false,
+  //   });
+  // }
+
+  // // Special case for level 1
+  // if (levelNumber === 1) {
+  //   customers = [
+  //     {
+  //       id: 1,
+  //       requests: [
+  //         {
+  //           fruit: "Banana",
+  //           level: 1,
+  //           quantity: 1,
+  //         },
+  //       ],
+  //       fulfilled: false,
+  //     },
+  //   ];
+  // }
+
+  // return customers;
+// }
 
     /***********************************************************
      * 0) GLOBAL FRENZY VARIABLES
@@ -839,7 +901,7 @@ let barnFadedOut = false; // Track if the barn has already faded out
 function updateBarnVisibility(level) {
   const barnCover = document.getElementById("barn-cover");
 
-  if (level === 2 && !barnFadedOut) {
+  if (level === 3 && !barnFadedOut) {
     // Fade out at level 5
     barnCover.style.opacity = 0; // Start fade-out
     barnFadedOut = true; // Mark as faded out to prevent further changes
@@ -1171,7 +1233,7 @@ function showPopupAndProceed() {
       updateBarnVisibility(level);
 
       // If we want Frenzy at level 2 (for testing):
-      if (level % 1 === 0) {
+      if (level % 3 === 0) {
         startFrenzyAfterLevel();
       } else {
         // otherwise proceed normally
@@ -1346,76 +1408,124 @@ function showPopupAndProceed() {
 }
 
 function drawCustomers(ctx) {
-    let startX = 250;
-    let startY = cupCenterY + cupHeight / 2 - 530;
-    let horizontalSpacing = 100;
+  // Starting position for the row of customers
+  let startX = 250; 
+  let startY = 110;  
+  let spacing = 150; // Horizontal spacing between each blob
 
-    // Title
-    ctx.font = "20px 'Fredoka One', sans-serif";
-    ctx.fillStyle = "black";
-    ctx.fillText("Customer Orders:", startX + 30, startY - 30);
+  customers.forEach((customer, i) => {
+    // X position for this customer
+    let xPos = startX + i * spacing;
+    let yPos = startY;
 
-    customers.forEach((customer, index) => {
-        let xPos = startX + index * horizontalSpacing;
-        let yPos = startY;
-        ctx.fillStyle = customer.fulfilled ? "green" : "black";
-        ctx.fillText(`Customer ${customer.id}`, xPos + 30, yPos);
+    // 1) Draw the blob
+    const blobKey = customer.blobImage;  // e.g. "blob_green1"
+    const blobTex = textures[blobKey];
 
-        let centerX = xPos;
-        let centerY = yPos + 40;
-        let radius = 30;
-        let angleStep = (2 * Math.PI) / customer.requests.length;
+    // If the customer is fulfilled, we might grayscale them or lower opacity
+    const isFulfilled = customer.fulfilled;
+    const opacity = isFulfilled ? 0.4 : 1.0;
 
-        customer.requests.forEach((request, reqIndex) => {
-            let type = fruitHierarchy[request.fruit];
-            let lvlData = type.levels[request.level];
-            let fruitX = centerX + radius * Math.cos(reqIndex * angleStep);
-            let fruitY = centerY + radius * Math.sin(reqIndex * angleStep);
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    if (blobTex && blobTex.complete) {
+      ctx.drawImage(blobTex, xPos - 40, yPos, 80, 80); 
+    } else {
+      // fallback: draw a simple circle
+      ctx.beginPath();
+      ctx.arc(xPos, yPos + 40, 40, 0, 2 * Math.PI);
+      ctx.fillStyle = "gray";
+      ctx.fill();
+    }
+    ctx.restore();
 
-            let inCup = Composite.allBodies(world).some(
-                (body) => body.fruitType === request.fruit && body.fruitLevel === request.level
-            );
+    // 2) Draw a thought bubble
+    // Let's do a simple “cloud” shape or a rectangle as an example.
+    // You can replace with your own bubble image if you prefer.
 
-            // If a texture exists and is loaded, draw it
-            if (lvlData.texture && textures[request.fruit] && textures[request.fruit].complete) {
-                ctx.drawImage(
-                    textures[request.fruit],
-                    fruitX - lvlData.radius,
-                    fruitY - lvlData.radius,
-                    lvlData.radius * 2,
-                    lvlData.radius * 2
-                );
+    // Bubble top-left
+    let bubbleX = xPos + 25;
+    let bubbleY = yPos + -20;
+    let bubbleWidth = 100;
+    let bubbleHeight = 50;
 
-                // Highlight fulfilled requests with a border
-                if (inCup && !customer.fulfilled) {
-                    ctx.beginPath();
-                    ctx.arc(fruitX, fruitY, lvlData.radius + 3, 0, 2 * Math.PI);
-                    ctx.strokeStyle = "green";
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-            } else {
-                // Fallback: Draw a simple colored circle if no texture exists
-                ctx.beginPath();
-                ctx.arc(fruitX, fruitY, lvlData.radius, 0, 2 * Math.PI);
-                ctx.fillStyle = customer.fulfilled ? "grey" : lvlData.color;
-                ctx.fill();
-                ctx.strokeStyle = inCup && !customer.fulfilled ? "green" : "black";
-                ctx.lineWidth = inCup && !customer.fulfilled ? 3 : 1;
-                ctx.stroke();
-            }
+    // Adjust bubble width/height if there are multiple requests
+    // e.g. for more fruit icons, expand bubbleWidth a bit
+    let requestCount = customer.requests.length;
+    bubbleWidth = 50 + requestCount * 45; // small example formula
 
-            // Draw fruit-level text on top
-            const textColor = getContrastColor(lvlData.color);
-            const effectiveColor = customer.fulfilled ? "#aaaaaa" : lvlData.color;
-            const txtFillColor = getContrastColor(effectiveColor);
-            ctx.font = "16px 'Sour Gummy', sans-serif";
-            ctx.fillStyle = txtFillColor;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(request.level + 1, fruitX, fruitY);
-        });
+    // Draw bubble (simple rounded rect):
+    ctx.save();
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    roundedRect(ctx, bubbleX, bubbleY, bubbleWidth, bubbleHeight, 10);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // 3) Inside the bubble, show each fruit request
+    // We'll scale them down to 30x30 or so, plus the level number
+    let iconX = bubbleX + 10;
+    let iconY = bubbleY + 10;
+
+    customer.requests.forEach((req, idx) => {
+      const fruitType = req.fruit;           // "Watermelon", "Pineapple", ...
+      const fruitLvl  = req.level;           // e.g. 2
+      // If you want quantity, you can show that too: req.quantity
+
+      // Find the texture for that fruit's base image
+      const lvlData   = fruitHierarchy[fruitType].levels[fruitLvl];
+      const fruitTex  = textures[fruitType] || null;
+      const size      = 30;
+
+      // Draw the fruit icon (scaled down)
+      if (fruitTex && fruitTex.complete) {
+        ctx.drawImage(fruitTex, iconX, iconY, size, size);
+      } else {
+        // fallback circle
+        ctx.beginPath();
+        ctx.arc(iconX + size/2, iconY + size/2, size/2, 0, 2*Math.PI);
+        ctx.fillStyle = lvlData.color;
+        ctx.fill();
+      }
+
+      // Write the level on top (small text)
+      ctx.font = "30px 'Sour Gummy', sans-serif";
+      ctx.fillStyle = "bacl";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(req.level + 1, iconX + 3, iconY + 3);
+
+      // If user wants the quantity visible, do something like:
+      // ctx.fillText("x" + req.quantity, iconX + 3, iconY + 20);
+
+      iconX += size + 10; // move right for the next icon
+
+      // If there's another request after this, we can draw a "+" sign in-between
+      if (idx < customer.requests.length - 1) {
+        ctx.fillText("+", iconX, iconY + 5);
+        iconX += 15; // spacing for plus sign
+      }
     });
+  });
+}
+
+/**
+ * A helper function to draw a rounded rectangle (for the bubble).
+ * Adjust radius as needed.
+ */
+function roundedRect(ctx, x, y, width, height, radius) {
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
 }
 
 function updateBlinkStates() {
@@ -1436,13 +1546,13 @@ function updateBlinkStates() {
     function drawCurrentLevel(ctx){
       ctx.font="30px 'Fredoka One', sans-serif";
       ctx.fillStyle="black";
-      ctx.fillText("Level: "+level,80,30);
+      ctx.fillText("Level: "+level,30,30);
     }
  
     function displayCoins(ctx){
       ctx.font="30px 'Fredoka One', sans-serif";
       ctx.fillStyle="black";
-      ctx.fillText("Coins: "+ coins,82,80);
+      ctx.fillText("Coins: "+ coins,30,80);
     }
 
     // (1) Draw Seeds below coins
@@ -1450,7 +1560,7 @@ function updateBlinkStates() {
       ctx.font="30px 'Fredoka One', sans-serif";
       ctx.fillStyle="black";
       // We'll draw it around y=130
-      ctx.fillText("Seeds: "+ seeds, 110, 130);
+      ctx.fillText("Seeds: "+ seeds, 30, 130);
     }
 
     // Add a click listener to detect clicks on the Seeds area in the canvas
