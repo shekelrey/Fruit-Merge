@@ -462,14 +462,14 @@ muteButton.addEventListener('click', () => {
     }
 
     // Set initial barn visibility based on the starting level
-    if (level > 5) {
+    if (level > 1) {
       toggleBarnCover(false); // Show Pachinko
     } else {
       toggleBarnCover(true); // Keep Barn covering
     }
 
     var coins = 0;  // track coins
-    var seeds = 1000; // track seeds (currency); starts at 20
+    var seeds = 50; // track seeds (currency); starts at 20
 
 
 
@@ -839,7 +839,7 @@ let barnFadedOut = false; // Track if the barn has already faded out
 function updateBarnVisibility(level) {
   const barnCover = document.getElementById("barn-cover");
 
-  if (level === 4 && !barnFadedOut) {
+  if (level === 2 && !barnFadedOut) {
     // Fade out at level 5
     barnCover.style.opacity = 0; // Start fade-out
     barnFadedOut = true; // Mark as faded out to prevent further changes
@@ -1171,7 +1171,7 @@ function showPopupAndProceed() {
       updateBarnVisibility(level);
 
       // If we want Frenzy at level 2 (for testing):
-      if (level % 3 === 0) {
+      if (level % 1 === 0) {
         startFrenzyAfterLevel();
       } else {
         // otherwise proceed normally
