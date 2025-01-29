@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1024, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Fruit Merge Game + Pachinko</title>
+  <title>Fruit Fusion</title>
  
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Sour+Gummy&display=swap" rel="stylesheet">
@@ -96,8 +96,8 @@
 
     .popupBox {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 30%;
+  left: 30%;
   transform: translate(-50%, -50%);
   background: url('https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/Banner.png') no-repeat center center; /* Use the banner as the background */
   background-size: contain; /* Ensure the image scales properly */
@@ -303,6 +303,18 @@ textures["blob_green1"]   = loadedAssets["https://raw.githubusercontent.com/shek
   textures["blob_purple1"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple1.png"];
   textures["blob_red1"]     = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red1.png"];
 
+  textures["blob_green2"]   = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_green2.png"];
+  textures["blob_orange2"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_orange2.png"];
+  textures["blob_pink2"]    = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_pink2.png"];
+  textures["blob_purple2"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple2.png"];
+  textures["blob_red2"]     = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red2.png"];
+
+  textures["blob_green3"]   = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_green3.png"];
+  textures["blob_orange3"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_orange3.png"];
+  textures["blob_pink3"]    = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_pink3.png"];
+  textures["blob_purple3"]  = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple3.png"];
+  textures["blob_red3"]     = loadedAssets["https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red3.png"];
+
     // Start the game loop or initialization
     startGame();
   }
@@ -373,6 +385,17 @@ muteButton.addEventListener('click', () => {
     "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_pink1.png",
     "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple1.png",
     "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red1.png", 
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_green2.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_orange2.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_pink2.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple2.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red2.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_green3.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_orange3.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_purple3.png",
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_red3.png",  
+    "https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/blob_pink3.png",
+
 
 
   ];
@@ -651,24 +674,32 @@ muteButton.addEventListener('click', () => {
 
 
 function generateLevel(levelNumber) {
-  // figure out how many customers
+  // Decide how many customers we want
   let minCustomers = Math.min(3, 1 + Math.floor(levelNumber / 3));
   let maxCustomers = Math.min(10, 3 + Math.floor(levelNumber / 2));
   let numCustomers = getRandomInt(minCustomers, maxCustomers);
 
+  // If you prefer a specific set for debugging, you can do:
+  // let numCustomers = 3;
+
+  // We'll store the results in an array
   let customers = [];
 
-  // For each customer...
+  // We define a set of color “bases” (without numeric suffix):
+  const colors = ["blob_green", "blob_orange", "blob_pink", "blob_purple", "blob_red"];
+
   for (let i = 0; i < numCustomers; i++) {
     // Build random fruit requests for that customer
     let requests = [];
-    let numRequests = Math.min(5, 1 + Math.floor(levelNumber / 5));  // up to 5 fruit types
+    let numRequests = Math.min(5, 1 + Math.floor(levelNumber / 5)); // up to 5 requests
     for (let r = 0; r < numRequests; r++) {
-      // choose a random fruit & a random level
-      let fruitType = allFruits[Math.floor(Math.random() * allFruits.length)];
+      // If level < 3, only standard fruits
+      let availableFruits = (levelNumber >= 3) ? allFruits : standardFruits;
+      let fruitType = availableFruits[Math.floor(Math.random() * availableFruits.length)];
+
       let maxFruitLevelIndex = Math.min(3, Math.floor(levelNumber / 3));
-      let fruitLevel = getRandomInt(1, maxFruitLevelIndex);  // 0..maxLevel
-      let quantity = getRandomInt(1, Math.min(3, 1 + Math.floor(levelNumber / 5)));
+      let fruitLevel = getRandomInt(1, maxFruitLevelIndex);
+      let quantity   = getRandomInt(1, Math.min(3, 1 + Math.floor(levelNumber / 5)));
 
       requests.push({
         fruit: fruitType,
@@ -678,40 +709,46 @@ function generateLevel(levelNumber) {
       });
     }
 
+    // Choose a “blob base color”
+    let colorBase = colors[i % colors.length];
+
     // Then create the customer object
     customers.push({
       id: i + 1,
       requests,
       fulfilled: false,
-      blobImage: ""  // will assign below
+      // For the blinking/eye shift:
+      blobBase: colorBase,       // e.g. "blob_green"
+      blobFrame: 1,              // start at frame 1
+      frameTimer: 0,
+      frameDuration: getRandomInt(50, 150)
     });
   }
 
-  // As a special case, if it’s level 1, we can give them simpler requests:
+  // OPTIONAL: If you want a special simpler set for level 1:
   if (levelNumber === 1) {
+    // Overwrite the array with just one simple request:
     customers = [
       {
         id: 1,
         requests: [
           {
             fruit: "Banana",
-            level: 1,  // means “first level” of Banana
+            level: 1,
             quantity: 1,
             fulfilled: false
           }
         ],
         fulfilled: false,
-        blobImage: ""
+
+        // Also define blobBase, etc. so it animates
+        blobBase: "blob_green", // pick any color you like
+        blobFrame: 1,
+        frameTimer: 0,
+        frameDuration: getRandomInt(50, 150)
       }
     ];
   }
-
-  // **Now** assign each customer a blob image from the available list
-  customers.forEach((customer, index) => {
-    // pick random or rotate
-    const randomBlob = availableBlobs[index % availableBlobs.length];
-    customer.blobImage = randomBlob;
-  });
 
   return customers;
 }
@@ -784,13 +821,16 @@ function clearCupAndCustomers() {
 // Called after the user clicks "Next Level" but BEFORE the next level actually starts
 function startFrenzyAfterLevel() {
   frenzyActive = true;
-
+ 
+   // Change background image for frenzy mode
+   document.getElementById('background-layer').style.backgroundImage = "url('frenzy-background.jpg')";
+ 
   // 1) Clear everything from the previous level
   clearCupAndCustomers();
-
+ 
   // 2) Pick a random fruit
   frenzyFruitType = standardFruits[Math.floor(Math.random() * standardFruits.length)];
-
+ 
   // 3) Show a short "Frenzy" banner for 2 seconds (but no dropping yet)
   const frenzyOverlay = document.getElementById('frenzyOverlay');
   frenzyOverlay.style.display = 'block';
@@ -798,12 +838,12 @@ function startFrenzyAfterLevel() {
     <h1>FRUIT FRENZY!</h1>
     <p>Get ready to merge <b>${frenzyFruitType}</b> soon...</p>
   `;
-
+ 
   // Wait 2 seconds, then hide banner and start 10s auto-drop
   frenzyPhaseTimeout = setTimeout(() => {
     // Hide banner so the cup is fully visible
     frenzyOverlay.style.display = 'none';
-
+ 
     // Start the 10s spree
     startFrenzySpawning();
   }, 2000);
@@ -1044,7 +1084,7 @@ function dropFruit() {
   popup.className = 'popupBox';
   popup.innerHTML = `
     <h2>You Lost!</h2>
-    </p></p></p></p></p></p></p></p></p></p></p></p></p>
+    </p></p></p>
     <p>A fruit fell out of the cup.</p>
     <button id="restartLevelBtn">Restart Level</button>
   `;
@@ -1270,6 +1310,7 @@ function showPopupAndProceed() {
  
     // ------------------- Canvas render loop -------------------
     (function renderLoop(){
+      updateBlobAnimations();   // <--- new call
       updateBlinkStates();
       if(moveLeft && guideLine.x> cupCenterX - (cupWidthTop/2)+20) guideLine.x-= moveSpeed;
       if(moveRight && guideLine.x< cupCenterX + (cupWidthTop/2)-20) guideLine.x+= moveSpeed;
@@ -1351,15 +1392,15 @@ function showPopupAndProceed() {
       if (frenzyActive) return;
 
     let startX = 60;
-    let startY = 350;
+    let startY = 300;
     let verticalSpacing = 70;
 
     // Title
     ctx.font = "20px 'Fredoka One', sans-serif";
     ctx.fillStyle = "black";
-    ctx.fillText("Upcoming:", startX + 10, startY - 50);
+    ctx.fillText("Upcoming:", startX + 10, startY);
 
-    for (let i = 0; i < upcomingFruits.length; i++) {
+    for (let i = 1; i < upcomingFruits.length; i++) {
       let fruitData = upcomingFruits[i];
         let type = fruitHierarchy[fruitData.type];
         let lvlData = type.levels[fruitData.level];
@@ -1379,7 +1420,7 @@ function showPopupAndProceed() {
 
                 // Draw fruit-level text on top (optional)
                 const textColor = getContrastColor(lvlData.color);
-                ctx.font = "16px 'Sour Gummy', sans-serif";
+                ctx.font = "1px 'Sour Gummy', sans-serif";
                 ctx.fillStyle = textColor;
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
@@ -1398,7 +1439,7 @@ function showPopupAndProceed() {
             ctx.stroke();
 
             const textColor = getContrastColor(lvlData.color);
-            ctx.font = "16px 'Sour Gummy', sans-serif";
+            ctx.font = "1px 'Sour Gummy', sans-serif";
             ctx.fillStyle = textColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
@@ -1408,30 +1449,30 @@ function showPopupAndProceed() {
 }
 
 function drawCustomers(ctx) {
-  // Starting position for the row of customers
-  let startX = 250; 
-  let startY = 110;  
-  let spacing = 150; // Horizontal spacing between each blob
+  // Define where to place the first blob & spacing between them
+  let startX = 250;  // shift horizontally
+  let startY = 120;  // shift vertically down
+  let spacing = 150; // space between each blob
 
   customers.forEach((customer, i) => {
-    // X position for this customer
+    // 1) Figure out screen coords for the i-th customer
     let xPos = startX + i * spacing;
     let yPos = startY;
 
-    // 1) Draw the blob
-    const blobKey = customer.blobImage;  // e.g. "blob_green1"
-    const blobTex = textures[blobKey];
+    // 2) Figure out which frame key to use
+    // e.g. if blobBase="blob_green" and blobFrame=2 => "blob_green2"
+    let frameKey = customer.blobBase + customer.blobFrame;
+    let blobTex  = textures[frameKey];
 
-    // If the customer is fulfilled, we might grayscale them or lower opacity
-    const isFulfilled = customer.fulfilled;
-    const opacity = isFulfilled ? 0.4 : 1.0;
-
+    // If the customer is fulfilled, we might fade them out
     ctx.save();
-    ctx.globalAlpha = opacity;
+    ctx.globalAlpha = customer.fulfilled ? 0.4 : 1.0;
+
+    // 3) Draw the blob
     if (blobTex && blobTex.complete) {
-      ctx.drawImage(blobTex, xPos - 40, yPos, 80, 80); 
+      ctx.drawImage(blobTex, xPos - 40, yPos, 80, 80);
     } else {
-      // fallback: draw a simple circle
+      // fallback circle if texture not yet loaded or missing
       ctx.beginPath();
       ctx.arc(xPos, yPos + 40, 40, 0, 2 * Math.PI);
       ctx.fillStyle = "gray";
@@ -1439,82 +1480,65 @@ function drawCustomers(ctx) {
     }
     ctx.restore();
 
-    // 2) Draw a thought bubble
-    // Let's do a simple “cloud” shape or a rectangle as an example.
-    // You can replace with your own bubble image if you prefer.
-
-    // Bubble top-left
+    // 4) Draw the “thought bubble” for requests
+    // For example, a simple rectangle or a custom bubble
     let bubbleX = xPos + 25;
-    let bubbleY = yPos + -20;
-    let bubbleWidth = 100;
+    let bubbleY = yPos - 20;
+    let requestCount = customer.requests.length;
+    let bubbleWidth  = 50 + requestCount * 45; // expand for # of requests
     let bubbleHeight = 50;
 
-    // Adjust bubble width/height if there are multiple requests
-    // e.g. for more fruit icons, expand bubbleWidth a bit
-    let requestCount = customer.requests.length;
-    bubbleWidth = 50 + requestCount * 45; // small example formula
-
-    // Draw bubble (simple rounded rect):
     ctx.save();
-    ctx.strokeStyle = "#000000";
+    ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#fff";
     ctx.beginPath();
     roundedRect(ctx, bubbleX, bubbleY, bubbleWidth, bubbleHeight, 10);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
 
-    // 3) Inside the bubble, show each fruit request
-    // We'll scale them down to 30x30 or so, plus the level number
+    // 5) Draw each request inside the bubble
     let iconX = bubbleX + 10;
     let iconY = bubbleY + 10;
+    const iconSize = 30;
 
     customer.requests.forEach((req, idx) => {
-      const fruitType = req.fruit;           // "Watermelon", "Pineapple", ...
-      const fruitLvl  = req.level;           // e.g. 2
-      // If you want quantity, you can show that too: req.quantity
+      let fruitType = req.fruit;
+      let fruitLvl  = req.level;
+      let lvlData   = fruitHierarchy[fruitType].levels[fruitLvl];
+      let fruitTex  = textures[fruitType] || null;
 
-      // Find the texture for that fruit's base image
-      const lvlData   = fruitHierarchy[fruitType].levels[fruitLvl];
-      const fruitTex  = textures[fruitType] || null;
-      const size      = 30;
-
-      // Draw the fruit icon (scaled down)
+      // Draw fruit icon
       if (fruitTex && fruitTex.complete) {
-        ctx.drawImage(fruitTex, iconX, iconY, size, size);
+        ctx.drawImage(fruitTex, iconX, iconY, iconSize, iconSize);
       } else {
         // fallback circle
         ctx.beginPath();
-        ctx.arc(iconX + size/2, iconY + size/2, size/2, 0, 2*Math.PI);
+        ctx.arc(iconX + iconSize/2, iconY + iconSize/2, iconSize/2, 0, 2*Math.PI);
         ctx.fillStyle = lvlData.color;
         ctx.fill();
       }
 
-      // Write the level on top (small text)
-      ctx.font = "30px 'Sour Gummy', sans-serif";
-      ctx.fillStyle = "bacl";
+      // Draw the fruit's level on top
+      ctx.font = "20px 'Sour Gummy', sans-serif";
+      ctx.fillStyle = "black";
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
-      ctx.fillText(req.level + 1, iconX + 3, iconY + 3);
+      ctx.fillText(req.level + 1, iconX + (iconSize - 8), iconY - 8);
 
-      // If user wants the quantity visible, do something like:
-      // ctx.fillText("x" + req.quantity, iconX + 3, iconY + 20);
-
-      iconX += size + 10; // move right for the next icon
-
-      // If there's another request after this, we can draw a "+" sign in-between
+      // If multiple requests, we can put a “+” between them
+      iconX += iconSize + 10;
       if (idx < customer.requests.length - 1) {
         ctx.fillText("+", iconX, iconY + 5);
-        iconX += 15; // spacing for plus sign
+        iconX += 15;
       }
     });
   });
 }
 
 /**
- * A helper function to draw a rounded rectangle (for the bubble).
- * Adjust radius as needed.
+ * Rounded rectangle helper
  */
 function roundedRect(ctx, x, y, width, height, radius) {
   ctx.moveTo(x + radius, y);
@@ -1526,6 +1550,27 @@ function roundedRect(ctx, x, y, width, height, radius) {
   ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
+}
+
+
+function updateBlobAnimations() {
+  customers.forEach(customer => {
+    // 1) Increment the timer
+    customer.frameTimer++;
+
+    // 2) If we've exceeded the 'frameDuration', switch frames
+    if (customer.frameTimer >= customer.frameDuration) {
+      // move to the next frame (1->2->3->1)
+      customer.blobFrame++;
+      if (customer.blobFrame > 3) {
+        customer.blobFrame = 1; 
+      }
+
+      // reset timer + pick a new random duration
+      customer.frameTimer = 0;
+      customer.frameDuration = getRandomInt(50, 150);
+    }
+  });
 }
 
 function updateBlinkStates() {
@@ -1577,48 +1622,49 @@ function updateBlinkStates() {
     });
 
     // (2) Open a popup that allows user to buy seeds
+    // (2) Open a popup that allows user to buy seeds
     function openSeedsPurchasePopup(){
       // If a popup is already open, do nothing
       if(document.getElementById('popupOverlay')) return;
-
+ 
       let overlay = document.createElement('div');
       overlay.id = 'popupOverlay';
       document.body.appendChild(overlay);
-
+ 
       let popup = document.createElement('div');
       popup.className = 'popupBox';
       popup.innerHTML = `
         <h2>Buy Seeds</h2>
         </p>
-        <p>Each seed costs 10 coins. You have ${coins} coins.</p>
-        <p>Max seeds you can afford: ${Math.floor(coins/10)}</p>
-        <input type="range" id="seedRange" min="0" max="${Math.floor(coins/10)}" value="0" />
+        <p>Each seed costs 2 coins. You have ${coins} coins.</p>
+        <p>Max seeds you can afford: ${Math.floor(coins/2)}</p>
+        <input type="range" id="seedRange" min="0" max="${Math.floor(coins/2)}" value="0" />
         <span id="seedRangeValue">0</span>
-      
+     
         <button id="purchaseSeedsBtn">Purchase</button>
         <button id="closePopupBtn">Cancel</button>
       `;
       overlay.appendChild(popup);
-
+ 
       // Range input listener
       let rangeEl = document.getElementById('seedRange');
       let rangeValueEl = document.getElementById('seedRangeValue');
       rangeEl.addEventListener('input', () => {
         rangeValueEl.textContent = rangeEl.value;
       });
-
+ 
       // Purchase button
       let purchaseBtn = document.getElementById('purchaseSeedsBtn');
       purchaseBtn.addEventListener('click', () => {
         let amountToBuy = parseInt(rangeEl.value);
         if (amountToBuy > 0) {
-          let cost = amountToBuy * 10;
+          let cost = amountToBuy * 2;
           coins -= cost;
           seeds += amountToBuy;
         }
         document.body.removeChild(overlay);
       });
-
+ 
       // Close/cancel button
       let closeBtn = document.getElementById('closePopupBtn');
       closeBtn.addEventListener('click', () => {
@@ -1687,7 +1733,7 @@ function updateBlinkStates() {
 
       // Fruit-level text (non-rotated)
       const textColor = getContrastColor(bgColor);
-      ctx.font = "16px 'Sour Gummy', sans-serif";
+      ctx.font = "1px 'Sour Gummy', sans-serif";
       ctx.fillStyle = textColor;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -1947,56 +1993,51 @@ function updateBlinkStates() {
  
 
     function drawGarden() {
-  pCtx.fillStyle = '#A7C957';
-  pCtx.fillRect(0, pachinkoFieldHeight, pWidth, gardenHeight);
-
-
-
-  Object.keys(basketProgress).forEach((fruit) => {
-    const lane      = lanes[fruit];
-    const seedCount = basketProgress[fruit];
-
-    if (seedCount >= 5) {
-      // final stage
-      const finalKey   = `root_${fruit.toLowerCase()}`;
-      const finalImage = textures[finalKey];
-      if (finalImage && finalImage.complete) {
-        // default size
-        let drawWidth  = lane.width;
-        let drawHeight = lane.height;
-
-        // Check if user is hovering over this fruit’s bounding box and it’s not harvested
-        if (
-          !harvestedFruits[fruit] &&
-          mousePos.x >= lane.xStart &&
-          mousePos.x <= lane.xStart + lane.width &&
-          mousePos.y >= lane.yStart &&
-          mousePos.y <= lane.yStart + lane.height
-        ) {
-          // Enlarge the tree by +10 px in each dimension
-          drawWidth  += 10;
-          drawHeight += 10;
+      pCtx.fillStyle = '#A7C957';
+      pCtx.fillRect(0, pachinkoFieldHeight, pWidth, gardenHeight);
+ 
+      Object.keys(basketProgress).forEach((fruit) => {
+        const lane      = lanes[fruit];
+        const seedCount = basketProgress[fruit];
+ 
+        if (seedCount >= 5) {
+          // final stage
+          const finalKey   = `root_${fruit.toLowerCase()}`;
+          const finalImage = textures[finalKey];
+          if (finalImage && finalImage.complete) {
+            let drawWidth  = lane.width;
+            let drawHeight = lane.height;
+ 
+            if (
+              !harvestedFruits[fruit] &&
+              mousePos.x >= lane.xStart &&
+              mousePos.x <= lane.xStart + lane.width &&
+              mousePos.y >= lane.yStart &&
+              mousePos.y <= lane.yStart + lane.height
+            ) {
+              drawWidth  += 10;
+              drawHeight += 10;
+            }
+ 
+            // Move trees slightly to the left
+            const offsetX = lane.xStart - (drawWidth - lane.width) / 2 - 15; // Shift left by 10px
+            const offsetY = lane.yStart - (drawHeight - lane.height) / 2;
+ 
+            pCtx.drawImage(finalImage, offsetX, offsetY, drawWidth, drawHeight);
+          }
+        } else {
+          // 1..4 seeds => draw root stage
+          const stage     = Math.max(1, Math.min(seedCount, 4));
+          const stageKey  = `root${stage}`;
+          const stageImage = textures[stageKey];
+          if (stageImage && stageImage.complete) {
+            // Move root stage to the left
+            pCtx.drawImage(stageImage, lane.xStart - 20, 330, 50, 50); // Shift left by 20px
+          }
         }
-
-        // Center the “bigger” image so it doesn’t jump around too much
-        const offsetX = lane.xStart - (drawWidth - lane.width) / 2;
-        const offsetY = lane.yStart - (drawHeight - lane.height) / 2;
-
-        pCtx.drawImage(finalImage, offsetX, offsetY, drawWidth, drawHeight);
-      }
-    } else {
-      // 1..4 seeds => draw root stage
-      const stage     = Math.max(1, Math.min(seedCount, 4));
-      const stageKey  = `root${stage}`;
-      const stageImage = textures[stageKey];
-      if (stageImage && stageImage.complete) {
-        // you can do the same “hover” enlargement if you want partial growth to be interactive
-        pCtx.drawImage(stageImage, lane.xStart - 10, 330, 50, 50);
-      }
+      });
     }
-  });
-}
-
+ 
     // Use seeds (currency) to drop pachinko balls
     pachinkoCanvas.addEventListener('click', (e) => {
   const rect = pachinkoCanvas.getBoundingClientRect();
