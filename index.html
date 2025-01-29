@@ -163,6 +163,26 @@
   background: rgba(0, 0, 0, 0.7);
 }
 
+#infoButton {
+  position: absolute;
+  top: 20px;
+  left: 1150px; /* Adjust so it sits nicely beside the mute button */
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#infoButton:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+
 
   </style>
 </head>
@@ -206,6 +226,8 @@
 
       <!-- Mute Button -->
   <button id="muteButton">🔊</button>
+  <button id="infoButton">ℹ️</button>
+
 
   <div id="background-layer"></div>
   <div id="game-container"></div>
@@ -343,6 +365,8 @@ textures["blob_green1"]   = loadedAssets["https://raw.githubusercontent.com/shek
     // Background Music
 const backgroundMusic = document.getElementById('backgroundMusic');
 const muteButton = document.getElementById('muteButton');
+
+
 const frenzyMusic = document.getElementById('frenzyMusic');
 
 
@@ -1086,6 +1110,62 @@ function dropFruit() {
         }
       });
     }
+
+      // 1) We'll define "openInfoPopup()" to show a new overlay
+  function openInfoPopup() {
+    // If a popup is already open, do nothing
+    if (document.getElementById('infoOverlay')) return;
+
+    // Create an overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'infoOverlay';
+    // Fill the entire screen
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    overlay.style.zIndex = '9999';
+
+    // Create a popup container (you can reuse .popupBox or do custom)
+    const popup = document.createElement('div');
+    popup.className = 'popupBox';
+    popup.style.width = '500px';  // adjust as needed
+    popup.style.height = '700px';  // auto height for text
+    popup.style.backgroundSize = 'cover'; // so it fits the text well
+
+    popup.innerHTML = `
+      <h2>How to Play</h2>
+      <p><p><p>
+        <b>1. Take Orders:</b> Check customer smoothie orders at the top.<br>
+        <b>2. Drop Fruits:</b> Use arrow keys to aim and spacebar to drop fruits into the cup.<br>
+        <b>3. Complete Orders:</b> Match fruits to orders to earn coins!
+      </p>
+      <hr style="width:80%; margin: 10px auto;">
+      <h2>Exotic Fruits</h2>
+      <p>
+        <b>1.</b> Use coins to play pachinko and get seeds.<br>
+        <b>2.</b> Grow seeds in the garden.<br>
+        <b>3.</b> Use exotic fruits to complete special orders.
+      </p>
+      <p><i>Tip: Don’t run out of seeds—plan wisely! 🎯🍓</i></p>
+      <button id="closeInfoBtn">Close</button>
+    `;
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    // 2) Close button event
+    const closeBtn = document.getElementById('closeInfoBtn');
+    closeBtn.addEventListener('click', () => {
+      document.body.removeChild(overlay);
+    });
+  }
+
+  // 3) Add a click event to the info button
+  const infoButton = document.getElementById('infoButton');
+  infoButton.addEventListener('click', openInfoPopup);
  
     function showLossPopup() {
   if (document.getElementById('popupOverlay')) return;
