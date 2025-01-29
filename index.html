@@ -199,6 +199,11 @@
       Your browser does not support the audio element.
     </audio>
 
+    <audio id="frenzyMusic" loop>
+      <source src="frenzy_sound.mp3" type="audio/mp3">
+      Your browser does not support the audio element.
+    </audio>
+
       <!-- Mute Button -->
   <button id="muteButton">🔊</button>
 
@@ -338,6 +343,8 @@ textures["blob_green1"]   = loadedAssets["https://raw.githubusercontent.com/shek
     // Background Music
 const backgroundMusic = document.getElementById('backgroundMusic');
 const muteButton = document.getElementById('muteButton');
+const frenzyMusic = document.getElementById('frenzyMusic');
+
 
 // Automatically start playing the music when the page loads
 backgroundMusic.volume = 0.5; // Adjust volume as needed
@@ -345,15 +352,12 @@ backgroundMusic.play();
 
 // Toggle mute/unmute
 muteButton.addEventListener('click', () => {
-  if (backgroundMusic.muted) {
-    backgroundMusic.muted = false;
-    muteButton.textContent = '🔊'; // Update button icon
-  } else {
-    backgroundMusic.muted = true;
-    muteButton.textContent = '🔇'; // Update button icon
-  }
-});
+  const newMuteValue = !backgroundMusic.muted;
+  backgroundMusic.muted = newMuteValue;
+  frenzyMusic.muted = newMuteValue;       // <--- ensure Frenzy music matches
 
+  muteButton.textContent = newMuteValue ? '🔇' : '🔊';
+});
   // Collect Asset URLs
   const assetUrls = [
     'https://raw.githubusercontent.com/shekelrey/Fruit-Merge/main/strawberry_open1.png',
@@ -818,17 +822,25 @@ function clearCupAndCustomers() {
 /***********************************************************
  * 2) FRUIT FRENZY FLOW
  ***********************************************************/
-// Called after the user clicks "Next Level" but BEFORE the next level actually starts
+
+
+
+
+ // Called after the user clicks "Next Level" but BEFORE the next level actually starts
 function startFrenzyAfterLevel() {
   frenzyActive = true;
-
-  // 1) Clear everything from the previous level
   clearCupAndCustomers();
+  // 1) Pause the background music, start the frenzy music
+  backgroundMusic.pause();
+  // Keep the muted state in sync
+  frenzyMusic.muted = backgroundMusic.muted;
+  frenzyMusic.volume = 0.5;      // choose your volume
+  frenzyMusic.currentTime = 0;   // rewind to start
+  frenzyMusic.play();
 
-  // 2) Pick a random fruit
   frenzyFruitType = standardFruits[Math.floor(Math.random() * standardFruits.length)];
 
-  // 3) Show a short "Frenzy" banner for 2 seconds (but no dropping yet)
+  // 2) Show "FRUIT FRENZY!" overlay for 2 seconds
   const frenzyOverlay = document.getElementById('frenzyOverlay');
   frenzyOverlay.style.display = 'block';
   frenzyOverlay.innerHTML = `
@@ -836,12 +848,9 @@ function startFrenzyAfterLevel() {
     <p>Get ready to merge <b>${frenzyFruitType}</b> soon...</p>
   `;
 
-  // Wait 2 seconds, then hide banner and start 10s auto-drop
+  // 3) After 2 seconds, hide overlay & start auto-spawning fruits
   frenzyPhaseTimeout = setTimeout(() => {
-    // Hide banner so the cup is fully visible
     frenzyOverlay.style.display = 'none';
-
-    // Start the 10s spree
     startFrenzySpawning();
   }, 2000);
 }
@@ -882,33 +891,42 @@ function endFruitFrenzy() {
   // Hide overlay
   document.getElementById('frenzyOverlay').style.display = 'none';
 
-  // Empty the cup again
+  // Stop the frenzy music & resume background music
+  frenzyMusic.pause();
+  backgroundMusic.play();
+
+  // Remove any leftover frenzy fruits
   Composite.allBodies(world).forEach(body => {
     if (body.fruitType) {
       Composite.remove(world, body);
     }
   });
 
-  // Now actually start the next level
+  // Now proceed to the next level
   resetCustomers();
 }
 
 function endFrenzyImmediately() {
   frenzyActive = false;
-  
+
   clearInterval(autoSpawnInterval);
   clearTimeout(frenzyPhaseTimeout);
 
+  // Hide overlay
   document.getElementById('frenzyOverlay').style.display = 'none';
 
-  // Remove any fruits in the cup
+  // Stop frenzy music & resume background
+  frenzyMusic.pause();
+  backgroundMusic.play();
+
+  // Remove any leftover frenzy fruits
   Composite.allBodies(world).forEach(body => {
     if (body.fruitType) {
       Composite.remove(world, body);
     }
   });
 
-  // Start the next level directly, no popup
+  // Start the next level
   resetCustomers();
 }
 function resetCustomers() {
